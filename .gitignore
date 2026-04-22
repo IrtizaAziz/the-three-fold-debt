@@ -1,0 +1,32 @@
+# Godot 4+ specific ignores
+.godot/
+*.tmp
+
+# Export templates and presets
+# It's recommended to keep export_presets.cfg in your repository if it doesn't contain sensitive info.
+# If you have sensitive Android/iOS keys, uncomment the next line:
+# export_presets.cfg
+
+# Build artifacts
+build/
+dist/
+
+# Mono/C# specific (if you ever use it)
+.mono/
+bin/
+obj/
+*.sln
+*.csproj
+*.suo
+*.user
+*.pdb
+*.mdb
+
+# System files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Crash logs
+core.*
+vgcore.*
