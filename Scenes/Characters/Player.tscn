@@ -1,0 +1,38 @@
+[gd_scene load_steps=5 format=3 uid="uid://dbj13b1wobnqq"]
+
+[ext_resource type="Script" path="res://Scripts/Player.gd" id="1_a1b2c"]
+[ext_resource type="Script" path="res://Scripts/Hana.gd" id="2_d3e4f"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_p1q2r"]
+radius = 12.0
+height = 48.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_s5t6u"]
+radius = 150.0
+
+[node name="Player" type="CharacterBody2D"]
+script = ExtResource("1_a1b2c")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CapsuleShape2D_p1q2r")
+
+[node name="Hana" type="Node2D" parent="."]
+script = ExtResource("2_d3e4f")
+
+[node name="HanaLightRadius" type="Area2D" parent="Hana"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hana/HanaLightRadius"]
+shape = SubResource("CircleShape2D_s5t6u")
+
+[node name="PointLight2D" type="PointLight2D" parent="Hana"]
+color = Color(1, 0.835294, 0.501961, 1)
+energy = 1.2
+texture_scale = 2.0
+
+[node name="KaitoEchoLight" type="PointLight2D" parent="."]
+color = Color(0, 0.74902, 1, 1)
+energy = 0.0
+
+[node name="KaitoEchoTimer" type="Timer" parent="."]
+wait_time = 2.0
+one_shot = true

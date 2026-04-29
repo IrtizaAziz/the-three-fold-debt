@@ -30,3 +30,6 @@ desktop.ini
 # Crash logs
 core.*
 vgcore.*
+# AI Architect Prompts
+Architect_L1_Prompts.md
+Architect_L2_Prompts.md
