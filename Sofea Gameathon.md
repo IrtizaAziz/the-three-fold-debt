@@ -4,47 +4,88 @@
 
 ### **The Justification (The "Why")**
 
-In your world, the **Kodoku Curse** is a dark ritual where a family is executed, and their souls are bound together to become a single, mindless demon of vengeance.
+In feudal Japan, the **Kodoku Curse** (蠱毒) is one of the darkest forbidden arts. When a lord wants to destroy an entire bloodline without leaving a traceable enemy, he commissions the ritual execution of a family. Their souls — still bound by love and duty — are cursed to fuse into a single, mindless **Gashadokuro**: a giant vengeful skeleton that consumes everything it hates. The curse does not require the family's consent. It requires only their death.
 
-The three siblings were betrayed by their own Lord. They died, but their bond was so strong they resisted the "merging." However, the curse is pulling them toward the **Pit of Yomi** (the underworld). To break the curse and ensure they don't become a monster, they must reach the **Celestial Forge** at the mountain's peak before the "Ebon Moon" rises. If they reach the Forge, they can sever the spiritual chains and allow their souls to ascend individually.
+The **Inoue siblings** — Kaito, Ren, and Hana — were betrayed and executed by their own Lord, **Daimyo Sorin Ashikaga**, in the bamboo grove outside their home village. Their bond as a family was so powerful that even in death, they resisted the merging. But the Kodoku Curse is relentless. It pulls them toward each other, and toward the **Pit of Yomi** (the Japanese underworld), where the merge will complete in darkness.
+
+They have one chance. The **Celestial Forge** — an ancient, sacred furnace at the peak of Mount Urashima — can sever spiritual chains if its flame is used before the **Ebon Moon** rises. The Ebon Moon is a total lunar eclipse that occurs once every hundred years. On its night, the boundary between the spirit world and Yomi dissolves, and the curse gains enough power to force the merge.
+
+They must reach the Forge before the eclipse. That is the only goal. That is the whole game.
 
 ---
 
 ### **The Three Siblings**
 
-You play as **Ren**, the middle sibling, who acts as the physical "Vessel." Your two siblings accompany you as spirits:
+You play as **Ren**, the middle sibling, who acts as the physical "Vessel." Your two siblings accompany you as spirits. All three are always on screen, but only Ren is corporeal.
 
-1. **Kaito (The Eldest \- The "Steel"):**  
-   * **The Vibe:** Stoic, protective, and stern.  
-   * **Narrative Role:** He represents the Samurai's duty. He died shielding the younger two from arrows.  
-   * **Mechanic:** He inhabits your **Blade**. When you use special attacks or parry, Kaito’s spectral form briefly flashes behind you to strike. He is your **Offense**.  
-2. **Ren (The Middle \- The "Vessel"):**  
-   * **The Vibe:** Guilty, determined, but weary.  
-   * **Narrative Role:** The only one "grounded" enough to hold a sword. He carries the weight of his siblings' souls literally and figuratively.  
-   * **Mechanic:** The player-controlled character. He manages the "Soul Meter" that fuels the others.  
-3. **Hana (The Youngest \- The "Light"):**  
-   * **The Vibe:** Innocent, optimistic, and ethereal.  
-   * **Narrative Role:** She was the family’s hope. She carries the **Soul-Lantern** that keeps the "Gloom" of the spirit world at bay.  
-   * **Mechanic:** She floats around you. Her light reveals hidden platforms, weakens "Shadow" enemies, and acts as your **Defense/Utility**.
+| Sibling | Role | Visual Identity | Godot Node | Mechanic |
+|---------|------|-----------------|-----------|----------|
+| **Kaito** (eldest) | The Steel | Blue spectral outline; samurai silhouette | `Node2D` child of Player, `top_level=true` | **Offense** — inhabits Ren's blade |
+| **Ren** (middle) | The Vessel | Dark silhouette; broken katana | `CharacterBody2D` (player) | **Movement & Survival** |
+| **Hana** (youngest) | The Light | Small golden lantern spirit | `Node2D` child of Player, `top_level=true` | **Defense & Utility** — sole light source |
 
----
+**Kaito — "The Steel":**
+- **Personality:** Stoic, military, controlled. His grief is cold fury. He speaks in single sentences, never paragraphs.
+- **Narrative Arc:** He died shielding the other two from the first volley of arrows. He blames himself for not reacting faster. His debt is his siblings' lives.
+- **Mechanic:** He inhabits Ren's broken blade as blue spirit energy. He is **fully slumbering in Level 1** and awakens at the start of Level 2 when Ren finds his shattered armor. All Kaito mechanics emit `kaito_*` signals.
 
-### **The Climax (The Goal's End)**
+**Ren — "The Vessel":**
+- **Personality:** Hollow with survivor's guilt. He survived the massacre's first moments by reflex, which he reads as cowardice. His arc is accepting that he is the anchor — the reason his siblings can move at all.
+- **Mechanic:** `CharacterBody2D` with a state machine: IDLE, RUN, JUMP, FALL, ROLL. He bridges his siblings' powers through player input. The **Gloom Meter** (0–100) is his primary survival constraint — it fills when he leaves Hana's radius, empties when he returns.
 
-The "End Boss" isn't the rival Lord who killed them—it is the **Manifestation of the Curse** itself. It’s a giant, shadowy version of what the siblings would become if they fail to reach the Forge (a multi-headed "Gashadokuro" skeleton).
-
-* **The Ending:** Upon reaching the Forge, the player must choose. The Forge only has enough "Celestial Fire" to cleanse **two** souls.  
-  * *The Twist:* In the ultimate act of Samurai honor, the two spirits (Kaito and Hana) often choose to save Ren (the living vessel), or Ren chooses to sacrifice his "physical" form so his siblings can be reborn. (This gives you multiple endings with very little extra coding\!)
+**Hana — "The Light":**
+- **Personality:** Calm, warm, and heartbreakingly optimistic. Not naive — she knows they may fail — but she chooses hope as a deliberate act of will.
+- **Mechanic:** She follows Ren using `lerp()` in `_physics_process()` with `top_level = true`. Her `PointLight2D` (warm gold, `#FFD580`, energy `1.2`) is the **only persistent light source** in the game. Her `HanaLightRadius` (`Area2D` + `CircleShape2D`, radius 150px) defines the safe zone. Gloom Wisps shrink her radius by 20% on contact.
 
 ---
 
-### **Why this is "Gamethon Friendly":**
+### **The Core Game Loop**
 
-* **Asset Swapping:** You only need one main character sprite (Ren). The siblings can be simple, floating particle-heavy spirits that don't need complex walking animations.  
-* **Clear Progression:** Level 1 (The Forest \- Finding Hana’s Light), Level 2 (The Ravine \- Finding Kaito’s Strength), Level 3 (The Mountain Peak \- The Forge).  
-* **Dialogue:** You can have the siblings "chatter" via text boxes at the bottom of the screen during gameplay, which builds the story without needing cutscenes.
+Every encounter follows this single loop:
+```
+EXPLORE → ENCOUNTER → ADAPT → PROGRESS
+```
 
-**Visual Tip:** Use a **color-coding system**. Anything Kaito-related (combat) is **Blue Spirit Flame**, and anything Hana-related (light/healing) is **Golden Spirit Light**. This makes the screen easy to read for the player.
+The **color system** teaches it without text tutorials:
+- **Gold on screen** → Hana is the answer (light, radius, platform, Gloom)
+- **Blue on screen** → Kaito is the answer (combat, heavy strike, parry)
+- **Black/Purple on screen** → Danger (Gloom, enemy, barrier)
+
+### **The Ending: Three-Fold Debt, Three-Fold Choice**
+
+The Forge only has enough Celestial Fire for **two** souls:
+
+| Ending | Who Survives | Tone | Code Cost |
+|--------|-------------|------|----------|
+| **Sacrifice Ren** | Kaito & Hana ascend; Ren fades | Tragic, honourable | 1 scene, 2 buttons |
+| **Siblings' Sacrifice** | Ren lives; Kaito & Hana fade | Bittersweet | 1 scene, 2 buttons |
+
+Both endings use a `choice_screen.tscn` with two buttons and two outcome `Label` sequences. No cutscene engine required.
+
+---
+
+### **Why this is "Gamethon Friendly"**
+
+| Design Decision | Hours Saved |
+|----------------|------------|
+| One player character; siblings are lightweight spirit nodes | ~30 hrs art |
+| Siblings use `PointLight2D` + particles, not full rigs | ~20 hrs VFX |
+| Gloom Meter = death timer (no complex health system in Level 1) | ~10 hrs code |
+| Dialogue via `Label` pop-ups; no cutscene engine needed | ~15 hrs code |
+| Shadow Gates = `queue_free()` on kill count | ~8 hrs design |
+| Level 4 reuses palette-swapped Level 1–2 enemies | ~25 hrs art |
+
+**Mandatory Color Palette — Lock Before Any Art is Produced:**
+
+| Element | Hex | Used For |
+|---------|-----|---------|
+| Kaito (Ice Blue) | `#00BFFF` | All Kaito energy, strikes, parry flash |
+| Hana (Warm Gold) | `#FFD700` | Lantern glow, safe zone, golden petals |
+| Gloom (Purple-Black) | `#1A0030` | `CanvasModulate`, death zones, Gloom Meter fill |
+| World Background | `#0D0A1A` | Sky and far background |
+| Enemies (Ghost Grey) | `#5A5A6A` | Silhouette fill for all fodder enemies |
+| Enemy Eyes (Danger Red) | `#FF2222` | Glowing accents on all enemy silhouettes |
+| Hazard Zones | `#AA0000` | Hazard tiles, bottomless pits |
 
 # Level 1
 
@@ -68,31 +109,70 @@ At the end of the grove, Ren finds a discarded, blood-stained sash—his older b
 
 ## **The Enemies: Shadows of the Betrayal**
 
-In Level 1, the enemies are "Fodder Spirits"—weak but terrifying in their numbers.
+In Level 1, all enemies are "Fodder Spirits" — weak individually, dangerous in the dark. **None require complex combat to defeat; the primary threat is the Gloom Meter, not the enemies themselves.** The level teaches survival before it teaches fighting.
 
-* **The Hollowed Ash:** These are the spirits of the low-ranking foot soldiers who died in the same massacre. They appear as grey, faceless silhouettes with glowing red eyes. They move slowly and attack with clumsy, ghostly pikes.  
-* **The Bamboo Lurkers:** Spirits that have merged with the environment. They look like normal bamboo stalks until you get close, at which point they bend unnaturally to strike Ren like a whip.  
-* **The Gloom Wisps:** Small, flying motes of darkness. They don't hurt Ren directly; instead, they try to "extinguish" Hana. If they touch her, her light radius shrinks, making the world more dangerous.
+| Enemy | AI States | HP | Damage | Godot Node |
+|-------|-----------|-----|--------|----------|
+| **Hollowed Ash** | PATROL → CHASE → ATTACK | 30 | 10/hit | `CharacterBody2D` |
+| **Bamboo Lurker** | IDLE → TRIGGERED | 20 | 15/hit | `Node2D` (static) |
+| **Gloom Wisp** | SEEK (targets Hana) | 10 | 0 (to Ren) | `Area2D` |
+
+**The Hollowed Ash:**
+Spirits of low-ranking foot soldiers who died in the same massacre. Grey, faceless silhouettes with glowing red eye sockets and ghostly pikes.
+- `PATROL`: Walk left and right between two `Marker2D` patrol points.
+- `CHASE`: Triggered when Ren enters a `CircleShape2D` detection `Area2D` (radius 200px). Move toward Ren.
+- `ATTACK`: When within 40px, play attack animation and spawn a hitbox for 0.3 seconds.
+- **Design note:** These are slow and predictable. The threat is that the player may chase them out of Hana's light.
+
+**The Bamboo Lurker:**
+Spirits fused with the environment. Indistinguishable from bamboo stalks until triggered.
+- `IDLE`: Static. No movement. No visual indicator beyond slightly wrong proportions.
+- `TRIGGERED`: When Ren's `Area2D` enters proximity (radius 100px), play a "bend and whip" animation and spawn a forward hitbox for 0.2 seconds. One shot; does not reset.
+- **Design note:** These are environmental hazards as much as enemies. Place them in corridors where the player will be watching the Gloom Meter, not the environment.
+
+**The Gloom Wisp:**
+Small dark orbs (24×24px) that exist solely to threaten Hana's light radius.
+- Move toward Hana's `global_position` using `move_toward()` or `lerp()`.
+- On contact with `HanaLightRadius` Area2D: call `hana.reduce_light(0.20)` to shrink her radius by 20%, then `queue_free()`.
+- Does **not** damage Ren directly. This is intentional — it forces the player to protect Hana, not just themselves.
+- **Design note:** Spawn Gloom Wisps in groups of 2. They are a time-pressure mechanic: if the player ignores 3 Wisps, Hana's radius becomes critically small.
 
 ## **The Abilities: The Bond Begins**
 
-Since this is the tutorial phase, the abilities are focused on **Survival** and **Cooperation.**
+Level 1 is the tutorial. All abilities are focused on **survival and establishing the sibling dynamic**. Nothing should feel overpowered. The player should feel fragile — that fragility is the point.
 
 ### **Ren (The Physical Vessel)**
 
-* **Broken Edge:** Because his sword is snapped, Ren’s reach is short but very fast. He fights like a desperate man, using quick stabs and pommel strikes.  
-* **Samurai Roll:** A quick dodge to move through enemies. In Level 1, this is his primary way to stay inside Hana's light.
+| Ability | Input | What It Does | Godot Implementation |
+|---------|-------|-------------|---------------------|
+| **Broken Edge** | Z / Attack | Fast, short-range stab. 1-hit, no combo. | Spawn hitbox `Area2D` for 0.15s |
+| **Samurai Roll** | Shift | Short iframe dash. Negates damage during roll frames. | Set `is_rolling = true` for 0.4s; ignore `take_damage()` calls |
+
+- Broken Edge reach: **40px** (deliberately short — forces the player to get close and value Hana's light).
+- Roll iframes: **0.4 seconds** (exported variable; can be tuned in the inspector).
+- Stamina: None in Level 1. Ren can roll freely. Stamina is a Level 2 consideration.
 
 ### **Hana (The Light)**
 
-* **Spirit Halo:** A passive ability. Hana creates a circular "Safe Zone" around Ren. Inside this circle, enemies take more damage; outside of it, they are nearly invisible and harder to hit.  
-* **The Flare:** Hana can briefly intensify her glow. This blinds all "Hollowed" enemies on screen for 2 seconds, giving Ren a chance to thin the herd or escape a trap.
+| Ability | Type | What It Does | Godot Implementation |
+|---------|------|-------------|---------------------|
+| **Spirit Halo** | Passive | Circular safe zone (radius 150px). Inside: enemies take +25% damage. Outside: Gloom fills. | `HanaLightRadius` `Area2D` + `gloom_changed` signal |
+| **The Flare** | Active (F key) | Intensify glow for 2 seconds. Blinds all Hollowed enemies on screen (they stop and freeze). | Tween `PointLight2D.energy` to `3.0`; emit `hana_flare` signal for enemy scripts to listen |
 
-### **Kaito (The Steel \- Slumbering)**
+- Flare cooldown: **10 seconds** (use a `Timer` node; display cooldown state on HUD).
+- Flare does **not** affect Bamboo Lurkers (they have no eyes) or Gloom Wisps (they have no sight mechanic).
 
-* **Vengeful Echo:** At this stage, Kaito is not fully awake. However, when Ren is at low health, Kaito’s spectral hand briefly appears to help Ren **Parry** an incoming attack. It’s an automatic "Second Chance" mechanic that introduces the player to the idea that Kaito is protecting them from within the blade.
+### **Kaito (The Steel — Slumbering)**
 
-**Design Note for the Team:** \> Level 1 should feel **quiet.** Save the heavy music for the Boss in Level 2\. In the Grove, focus on the "clink" of the broken sword and the soft hum of Hana's light. This makes the player feel lonely, which makes the bond between the siblings feel much more important.
+| Ability | Type | What It Does | Godot Implementation |
+|---------|------|-------------|---------------------|
+| **Vengeful Echo** | Passive (auto) | When Ren's HP drops below 25%, a 2s window opens. The next incoming hit is auto-parried. Kaito's spectral hand flashes. | `kaito_active` flag; `kaito_echo_triggered` signal |
+
+- Kaito's Echo fires once per health-below-25% event. After it fires, `kaito_cooldown = true` prevents it re-triggering until Ren heals above 25%.
+- The flash: a `PointLight2D` on the sword node, tweened from `energy 0` → `2.5` → `0` over 0.3 seconds.
+- This mechanic is the player's first hint that Kaito exists. It is not explained. The player must notice it themselves.
+
+> **Design Note for All Roles:** Level 1 must feel **quiet and lonely**. No music — only ambient sound. Save all heavy audio and visual polish for Level 2's boss fight. The loneliness of the grove is what makes the player care about Hana's lantern.
 
 # Level 2
 
@@ -116,129 +196,165 @@ At the manor of the village headman, Ren confronts the "Echo" of the Captain who
 
 ## **The Enemies: The Corrupted Vanguard**
 
-In Level 2, the enemies are heavily armored and require strategy to defeat. You can no longer just run past them.
+Level 2 enemies are heavily armored and require **strategic use of Kaito** to defeat. Rolling past them is no longer always viable. The core design challenge is sequencing: use Hana to expose, then Kaito to destroy.
 
-* **The Phased Ashigaru (Foot Soldiers):** These soldiers flicker in and out of reality. When they are transparent, Ren's normal attacks pass right through them. The player must wait for them to solidify to strike, or use Kaito's abilities to hit them while phased.  
-* **The Crimson Archers:** Positioned on the burning rooftops. They fire arrows of red spirit energy. They force the player to keep moving and introduce the necessity of the "Parry" mechanic.  
-* **The Captain (Level Boss):** A large, brute-force enemy with a massive Kanabō (spiked club). He has a very simple 3-state AI:  
-  1. A slow, heavy overhead smash.  
-  2. A sweeping attack that covers the ground.  
-  3. A "roar" that summons a wave of falling ash, forcing Ren to take cover under Hana's light.
+| Enemy | AI States | HP | Damage | Godot Node | Key Mechanic |
+|-------|-----------|-----|--------|----------|--------------|
+| **Phased Ashigaru** | PHASED ↔ SOLID (timed) | 50 | 15/hit | `CharacterBody2D` | Immune when phased; solidifies in Hana's light |
+| **Crimson Archer** | IDLE → AIM → FIRE | 25 | 20/arrow | `Node2D` (stationary) | Projectile; reversed by Parry |
+| **The Captain (Boss)** | SMASH → SWEEP → ROAR (loop) | 300 | 25/hit | `CharacterBody2D` | 3-phase; HP thresholds change the loop |
+
+**The Phased Ashigaru:**
+Spectre soldiers flickering in and out of physical reality as the curse destabilises them.
+- Toggle between `PHASED` (transparent, immune) and `SOLID` (opaque, vulnerable) on a 3-second `Timer`.
+- When `PHASED`: `modulate.a = 0.4`; set `is_phased = true`; all incoming hitbox collisions are ignored.
+- When `SOLID`: `modulate.a = 1.0`; behave like Hollowed Ash (patrol → chase → attack).
+- **Special rule:** When inside `HanaLightRadius`, force immediate transition to `SOLID`. Listen for `body_entered` from Hana's Area2D.
+- **Kaito rule:** Phantom Strike hits them regardless of phase state.
+
+**The Crimson Archer:**
+Stationary on burning rooftops. Their arrows are unavoidable without moving or parrying.
+- Detect Ren via `Area2D` detection zone (radius 300px). Fire a `SpiritArrow` every 2 seconds.
+- `SpiritArrow` is an `Area2D` that moves in a straight line at 300px/s. On hitting Ren: `ren.take_damage(20)`.
+- **Parry rule:** If Ren successfully parries while arrow is in flight, the arrow's `direction` reverses and `is_reversed = true`. If a reversed arrow hits the Archer, it takes 25 damage.
+- **Design note:** Place Archers high enough that normal attacks cannot reach. Teach the player that Upward Slash or Parry are required.
+
+**The Captain (Level 2 Boss):**
+The Echo of the officer who gave the execution order. A towering, horned Yokai with a Kanaō (spiked iron club).
+- **Boss HP:** 300 (exported). **Boss damage:** 25/hit (exported).
+- **Attack pattern loop** (repeats, speeding up slightly after each full cycle):
+  1. `SMASH`: Slow telegraphed overhead slam. Hitbox spawns at landing point. 1.2s wind-up.
+  2. `SWEEP`: Ground-level sweep from one side of the arena to the other. 0.8s sweep duration.
+  3. `ROAR`: Boss pauses; falling ash rains from the top of screen. Standing outside Hana's light during Roar deals 5 damage/second.
+- On reaching **50% HP**: emit `boss_phase_changed(2)` signal; increase attack frequency by 20%; Boss gains red glow overlay.
+- On death: emit `boss_defeated` signal; disable `LevelEnd` Area2D lock.
+- **Godot implementation:** Use `AnimationPlayer` to drive all 3 attack states. Do not hand-code the movement in `_physics_process` — it is slower and harder to tune.
 
 ## **The Abilities: The Steel Awakens**
 
-With Kaito active, the combat opens up. Ren transitions from a desperate survivor into a lethal warrior.
+With Kaito active, combat opens up completely. Ren transitions from a desperate survivor into a lethal warrior. The player should feel the power increase immediately.
 
 ### **Ren (The Physical Vessel)**
 
-* **The Spectral Edge:** Ren's basic attack range is doubled. The broken steel is now tipped with Kaito's blue spirit energy, allowing for 3-hit combos that feel weighty and crisp.  
-* **Upward Slash:** A new launcher attack that allows Ren to hit enemies on platforms above him (essential for dealing with the Crimson Archers).
+| Ability | Input | What It Does | Godot Implementation |
+|---------|-------|-------------|---------------------|
+| **Spectral Edge (Combo)** | Z (chain) | 3-hit combo; each hit extends range with Kaito's blue energy | Spawn 3 sequential `Area2D` hitboxes; range doubles on hit 2 and 3 |
+| **Upward Slash** | Up + Z | Launcher attack; hits enemies on platforms above Ren | Hitbox spawns above Ren for 0.2s |
+
+- Spectral Edge reach: **40px → 60px → 80px** across the 3-hit combo (Kaito's energy extends with each strike).
+- Upward Slash is **essential** for Crimson Archers. Teach it by placing the first Archer out of normal attack range.
 
 ### **Kaito (The Steel)**
 
-* **Phantom Strike (Heavy Attack):** Kaito’s signature move. Ren swings the sword, and a split-second later, Kaito's giant spirit-arms appear and mirror the swing with massive force. This breaks enemy shields and shatters the Shadow Gates blocking the level.  
-* **The Deflect (Parry):** A precisely timed block. If Ren blocks right before an arrow or a sword hits, Kaito's spirit flashes, knocking the projectile back or briefly stunning the melee attacker.
+| Ability | Input | What It Does | Godot Implementation |
+|---------|-------|-------------|---------------------|
+| **Phantom Strike** | X (heavy) | Delayed spirit-arms mirror the swing with massive force. Breaks shields and Shadow Gates. | Spawn large `Area2D`; 0.08s hit-stop on connect; emit `kaito_phantom_strike` signal |
+| **Deflect (Parry)** | Hold Block before impact | Precise 0.15s window. Knocks projectiles back; stuns melee for 1s. | `is_parrying` flag; check incoming hitbox `body_entered` timing vs window |
+
+- **Hit-stop:** On Phantom Strike connect, call `Engine.time_scale = 0` for 0.08 seconds, then restore. This is the single most impactful "juice" moment in the game. Do not skip it.
+- **Parry window:** 0.15 seconds. Outside the window, the block still reduces damage by 50% but does not stun or reflect.
+- Shadow Gates: any Phantom Strike hit on a `ShadowGate` `Area2D` calls `gate.add_soul()` directly (or via signal). One Phantom Strike counts as 3 souls.
 
 ### **Hana (The Light)**
 
-* **Revealing Light (Passive Upgrade):** Hana's light now naturally forces "Phased" enemies to solidify faster when they step inside her radius, making her a vital tool for crowd control.
+| Ability | Type | What It Does | Godot Implementation |
+|---------|------|-------------|---------------------|
+| **Revealing Light** | Passive upgrade | Phased enemies inside the radius solidify **immediately** instead of waiting for their timer. | In `PhasedAshigaru.gd`, connect `HanaLightRadius.body_entered` to force `current_state = SOLID` |
 
-**Design Note for the Team:** \> For the artists and programmers, keep the Boss Fight extremely contained. Do not build a massive, complex arena. A single, flat screen (like a traditional fighting game stage) is perfect. Spend your programming hours perfecting the "feel" of Kaito's Phantom Strike—add a slight screen shake, a loud, crisp sound effect, and a freeze-frame (hit-stop) so the player feels the impact of the older brother's rage.
+> **Design Note for All Roles:** Keep the boss fight in a **single flat arena** (one screen wide). Do not build a large scrolling boss room. Spend implementation time on the feel of Phantom Strike — screen shake + hit-stop + loud audio = the most important 0.08 seconds in the game.
 
 # Level 3
 
 ## **Level 3: The Narrative Arc**
 
-### **The Opening: The Ebon Moon Rises**
+### **The Opening: The Summit of the Ebon Moon**
 
-Having conquered the echoes of their past in the village, the siblings reach the base of the sacred mountain. However, the sky turns a sickly, bruising purple as the "Ebon Moon" eclipses the sun. The **Kodoku Curse** reaches its peak, trying to violently pull the three souls together. The ground shatters, and gravity itself begins to warp.
-
-### **The Progression: The Rising Void**
-
-There is no turning back. From the bottom of the screen, the "Gloom" from Level 1 returns, but now it is a rising ocean of pitch-black, grasping hands. Ren must climb the floating, shattered ruins of the mountain path. He cannot do this alone; he must throw Kaito and Hana to traverse impossible gaps, literally using his bond with his siblings to pull himself upward.
+Having conquered the echoes of their past in the village, the siblings reach the summit of the sacred mountain, where the Celestial Fire burns in an ancient stone forge. However, the sky turns a sickly, bruising purple as the "Ebon Moon" eclipses the sun. The **Kodoku Curse** reaches its peak, trying to violently pull the three souls together. The ground shatters, and gravity itself begins to warp.
 
 ### **The Climax: The Forge of Souls (Final Boss)**
 
-Ren reaches the summit, where the Celestial Fire burns in an ancient stone forge. But the Gloom follows, erupting from the cliffside and solidifying into **The Amalgamation**—a massive, multi-armed demonic skeleton wearing the armor of a hundred dead samurai. It is the physical embodiment of the curse they are trying to escape.
+There is no turning back. From the shattered earth, the "Gloom" from Level 1 erupts and solidifies into **The Amalgamation**—a massive, multi-armed demonic skeleton wearing the armor of a hundred dead samurai. It is the physical embodiment of the curse they are trying to escape.
 
 ### **The Ending: The Choice**
 
 Once the beast is slain, the siblings approach the Forge. The fire is weak. **It only has enough power to sever the curse and grant peace to two souls.** The game pauses, and the player (as Ren) is given a choice:
 
-1. **Sacrifice Ren:** Ren throws himself into the Void, allowing Kaito and Hana to ascend.  
-2. **The Siblings' Sacrifice:** Kaito and Hana pour their remaining spirit energy into the Forge, pushing Ren back into the world of the living, returning him to life, but leaving them to fade.
+1. **Sacrifice Ren:** Ren throws himself into the Void, allowing Kaito and Hana to ascend.
+2. **The Siblings' Sacrifice:** Kaito and Hana pour their remaining spirit energy into the Forge, pushing Ren back into the world of the living — returning him to life, but leaving them to fade.
 
-## **The Enemies: The Broken World**
-
-Because the focus is on escaping the rising Void, the enemies here are designed as **obstacles** rather than arenas to clear out.
-
-* **The Rising Gloom (Environmental Threat):** An instant-death wall of shadows that slowly scrolls up from the bottom of the screen. It forces the player to keep climbing.  
-* **The Gale Wraiths:** Flying, wind-based spirits that don't deal much damage but are designed to knock Ren back. They force the player to time their jumps and dashes carefully.  
-* **The Amalgamated Sentinels:** Ground-based enemies that are horribly fused together—two torsos, four arms. They act as "walls." They are heavily armored and block the narrow vertical pathways, requiring Kaito's heavy strikes to break through quickly before the Gloom catches up.
+Both endings resolve with a brief dialogue sequence and a static silhouette screen. No cutscene engine required — a `choice_screen.tscn` with two buttons and two outcome `Label` sequences is sufficient.
 
 ---
 
 ## **The Abilities: Perfect Synergy**
 
-The mechanics now require the player to use both Kaito and Hana in tandem to traverse the shattered mountain.
+Level 3 is the payoff. Both siblings are fully awake and working in perfect tandem. The player should feel powerful and in control — but the boss demands mastery of every tool they have learned.
 
 ### **Ren (The Vessel)**
 
-* **The Spirit Tether:** Ren can now target a spot in mid-air. He hurls one of his siblings' spirits and then pulls himself toward them in a rapid dash.
+| Ability | Input | What It Does | Godot Implementation |
+|---------|-------|-------------|---------------------|
+| **Spirit Tether** | Q (hold to select sibling) | Hurl a sibling to a mid-air point, then dash to them | Launch sibling `Node2D` via `Tween`; on arrival, dash Ren to `sibling.global_position` |
+
+- Tether cooldown: **3 seconds** per sibling independently (separate `Timer` nodes).
+- The Spirit Tether is the **primary mobility tool** in Level 3, replacing the Samurai Roll from Level 1.
+- Iframes remain active during the Tether dash (`is_rolling = true` during flight).
 
 ### **Kaito (The Steel)**
 
-* **Meteor Dash:** If Ren uses the Tether with Kaito, Kaito flies upward, and Ren dashes to him with a violent, damaging strike. It’s an attack and a double-jump combined. Players use this to blast through Amalgamated Sentinels blocking the upward path.
+| Ability | Type | What It Does | Godot Implementation |
+|---------|------|-------------|---------------------|
+| **Meteor Dash** | Tether variant | Kaito flies to target; Ren dashes to him with a damaging aerial strike | Kaito `Node2D` tweens to target; Ren hitbox activates for 0.3s on arrival |
+
+- Damage: **40 per Meteor Dash** (double a normal Phantom Strike).
+- The boss's **Phase 3** can only be damaged by Meteor Dash — all ground attacks are ignored.
+- Passes through Phase 2 and Phase 3 boss armor.
 
 ### **Hana (The Light)**
 
-* **Spectral Anchor:** If Ren uses the Tether with Hana, she flies to a spot and becomes a solid, glowing platform for 3 seconds. Ren can use this to catch his breath, dodge a Gale Wraith, or set up his next jump.
+| Ability | Type | What It Does | Godot Implementation |
+|---------|------|-------------|---------------------|
+| **Spectral Anchor** | Tether variant | Hana flies to a target spot and becomes a solid glowing platform for 3 seconds | Set `hana.is_platform = true`; enable `StaticBody2D` collision shape for 3s then disable |
+
+- Hana's platform can support Ren's weight while he attacks from above.
+- **Phase 1 requirement:** The boss's mask can only be struck from above. Spectral Anchor is the only way to reach it.
+- The 3-second duration is intentionally short — it forces the player to act decisively.
 
 ## **The Boss Fight: The Amalgamation**
 
-To keep this achievable in Godot with your timeline, the boss shouldn't move around the screen much. Instead, it acts as a massive "wall" on the right side of the screen, slamming its giant fists down.
+The Amalgamation is the physical manifestation of what the Inoue siblings would become if the Kodoku Curse completes. It wears the shattered armor of every samurai who died in betrayal — their grudge fused into one colossal form. It does not speak. It simply advances.
 
-* **Phase 1 (Hana's Phase):** The boss is covered in impenetrable shadow armor. The player must use Hana's *Spectral Anchor* to climb high above the boss's sweeping attacks and drop Hana's light directly onto the boss's mask, shattering the darkness.  
-* **Phase 2 (Kaito's Phase):** The boss is exposed and angry. It begins slamming giant swords down. The player must use Kaito's *Deflect/Parry* with perfect timing to stagger the boss, opening its core for a combo attack.  
-* **Phase 3 (Synergy):** The boss summons the Rising Gloom. The player must constantly stay airborne using the *Spirit Tether* between Hana's platforms and Kaito's dashes, attacking the boss entirely in mid-air for the final blow.
+**Arena:** A single flat screen at the summit of Mount Urashima. The boss stands as a massive wall on the right side of the screen. It does not walk; its limbs extend and slam. This is achievable with `AnimationPlayer` alone — do not try to script AI movement.
 
-**Godot Design Note for the Team:** **Level 3 Level Design:** You don't need a massive, sprawling map for this. Build a tall, narrow `TileMapLayer`. For the Rising Gloom, simply create an `Area2D` with a dark `ColorRect` and a script that says `position.y -= speed * delta`. If the player's `Area2D` overlaps it, trigger the Game Over screen.
+**Boss Stats:**
+- HP: 500 (exported)
+- Damage per hit: 30 (exported)
+- Arena width: one screen (no camera scroll needed)
 
-**The Boss Scene:** Keep the boss logic in a completely separate `Boss_Arena.tscn` scene. Use an `AnimationPlayer` to control the boss's attacks (e.g., animate a giant hand slamming down). This is vastly easier than trying to program complex Boss AI movement in scripts\!
+| Phase | Trigger | Boss Behaviour | Player Must Use | HP Range |
+|-------|---------|---------------|----------------|---------|
+| **Phase 1: Shadow Armor** | Start of fight | Sweeps with impervious armored arms; immune to all attacks | Hana Spectral Anchor → reach above boss → drop Hana's light on the glowing mask | 500 → 300 |
+| **Phase 2: Exposed Core** | HP ≤ 300 | Slams giant cursed swords down from above (random X positions) | Kaito Parry to stagger the boss → strike the glowing core with Phantom Strike | 300 → 100 |
+| **Phase 3: Rising Gloom** | HP ≤ 100 | Summons rising Gloom floor (instant kill on contact); immune to ground attacks | Spirit Tether chain: Spectral Anchor → Meteor Dash → repeat | 100 → 0 |
 
-# Level 4
+**Phase 1 detail:**
+- All normal attacks bounce off with a `modulate` flash (red tint for 0.1s).
+- Hana's `PointLight2D` touching the mask's `Area2D` triggers the "shatter" animation and HP threshold drop to Phase 2.
+- The boss's sweeping arm is a wide `Area2D` hitbox that slides across the floor. The player must be above it to dodge.
 
-## **Level 4: The Shores of Yomi (The Underworld)**
+**Phase 2 detail:**
+- Cursed swords fall at randomised intervals (2–3 simultaneously, `randf_range` for X position).
+- Parry window: 0.15 seconds (same as Level 2). Successful parry stuns the boss for 1.5 seconds.
+- During the stun window, the core `Area2D` becomes active. Ren must connect a Phantom Strike to deal meaningful damage.
+- Phantom Strike during stun window: **50 damage** (bonus multiplier on `is_stunned` flag).
 
-### **The Narrative Arc: The Refusal**
+**Phase 3 detail:**
+- A `ColorRect` node (`#1A0030`) rises from the bottom at 40px/second. If Ren's `Area2D` overlaps it: load `game_over_screen.tscn`.
+- The boss is fully immune to all ground-level attacks.
+- Only **Meteor Dash** deals damage. Player must chain: Spectral Anchor → Meteor Dash → Spectral Anchor → repeat.
+- The rising Gloom is the physical manifestation of what Level 1 introduced — it is a narrative callback, not just a hazard.
 
-At the end of Level 3, the Forge demands a sacrifice. But to unlock Level 4, the player must have found three hidden "Memory Shards" in the previous levels. If they have them, Ren refuses the Forge's ultimatum. He strikes the Celestial Forge with his sword, shattering it.
-
-The ground gives way, and all three siblings plummet into **Yomi** (the Underworld). The Forge wasn't salvation; it was a prison. To truly break the curse, they must fight their way across the shores of the afterlife and defeat the **Warden of Yomi** to force their way back to the world of the living—together.
-
-### **The Progression: The Gauntlet**
-
-This level is a pure test of skill. No puzzles, no slow platforming. It is a flat, desolate beach of black sand beneath a shattered red sky. It acts as an arena/gauntlet where waves of enemies spawn, leading up to the True Final Boss.
-
-## **The Enemies: The Nightmare Echoes (Asset Reuse\!)**
-
-Because this is a stretch goal, **do not make new enemy sprites.** Use the classic game dev trick: **Palette Swapping.** \* **The Blood Ashigaru:** Take the foot soldiers from Level 2, tint their sprites deep red, and increase their movement speed by 50%.
-
-* **The Void Lurkers:** Take the Bamboo enemies from Level 1, make them pitch black with white eyes, and have them spawn directly out of the sand.  
-* **The True Final Boss \- The Warden:** A massive, floating, multi-armed Yokai. (You can actually reuse the Rig/Animation nodes from the Level 3 boss, but give it a new texture and faster attack patterns).
-
-## **The Abilities: The Unified Soul (Power Fantasy)**
-
-In the first three levels, the siblings were separated and struggling. Now, having chosen to stick together in the Underworld, their souls synchronize perfectly. This level is a **Power Fantasy**.
-
-* **The Avatar State:** The player no longer has to carefully manage Hana's light or Kaito's cooldowns. Ren glows with an intense, blinding aura (combining Gold and Blue).  
-* **Mechanic Override:** \* Ren's sword attacks now shoot projectile waves of Kaito's blue energy across the screen.  
-  * Hana's light doesn't just reveal enemies; it actively burns them over time (AOE damage).  
-  * The Spirit Dash has no cooldown, allowing the player to zip around the screen like a superhero.
-
-**Godot Design Note for the Team (Stretch Goal Logic):** Do not let your team start on Level 4 until Levels 1, 2, and 3 are 100% playable with a Start Menu and a Game Over screen.
-
-If you do get to Level 4, build it in a single day using Godot's `Modulate` property. You can take the `Level_2.tscn` file, duplicate it, delete all the walls to make it a flat arena, and change the `CanvasModulate` from dark blue to an eerie, apocalyptic blood-red.
+> **Godot Implementation Note:** Keep all boss logic in a single `Boss_Arena.tscn`. Drive all attacks from one `AnimationPlayer` with separate tracks per limb. Trigger phase transitions via `boss.emit_signal("phase_changed", phase_number)`. The Gloom floor `ColorRect` is a child node with `visible = false` until Phase 3 begins.
 
 # Relevant Games
 
