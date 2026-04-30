@@ -4,38 +4,35 @@
 [ext_resource type="Script" uid="uid://l7y73exq22nx" path="res://Scripts/Level_1.gd" id="1_nh7xm"]
 [ext_resource type="PackedScene" uid="uid://d8m3k2q1w7r4" path="res://Scenes/Characters/BambooLurker.tscn" id="2_j0k67"]
 [ext_resource type="PackedScene" uid="uid://dbj13b1wobnqq" path="res://Scenes/Characters/Player.tscn" id="2_vnunq"]
-[ext_resource type="PackedScene" uid="uid://b4n5v6c7x81a" path="res://Scenes/Characters/GloomWisp.tscn" id="4_5r5j8"]
 [ext_resource type="PackedScene" uid="uid://bhudhudscene1" path="res://Scenes/UI/HUD.tscn" id="3_hud"]
+[ext_resource type="PackedScene" uid="uid://b4n5v6c7x81a" path="res://Scenes/Characters/GloomWisp.tscn" id="4_5r5j8"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_akpl7"]
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_j0k67"]
 size = Vector2(640, 64)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_aur7v"]
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_5r5j8"]
 size = Vector2(128, 128)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_akpl7"]
+size = Vector2(512, 64)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_aur7v"]
+size = Vector2(192, 64)
+
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ptpgp"]
-size = Vector2(128, 192)
+size = Vector2(192, 64)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2uqsa"]
-size = Vector2(192, 192)
+size = Vector2(512, 64)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_lp2uw"]
 size = Vector2(192, 64)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_pdmgb"]
-size = Vector2(128, 192)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_2jeek"]
-size = Vector2(64, 128)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_yytvd"]
 size = Vector2(256, 64)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_neuul"]
-size = Vector2(32, 200)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_ground"]
-size = Vector2(640, 64)
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2jeek"]
+size = Vector2(200, 32)
 
 [node name="Level_1" type="Node2D" unique_id=2136243702]
 script = ExtResource("1_nh7xm")
@@ -43,134 +40,126 @@ script = ExtResource("1_nh7xm")
 [node name="CanvasModulate" type="CanvasModulate" parent="." unique_id=558901181]
 color = Color(0.101960786, 0, 0.1882353, 1)
 
-[node name="HUD" parent="." instance=ExtResource("3_hud") unique_id=1847362949]
+[node name="HUD" parent="." unique_id=1847362949 instance=ExtResource("3_hud")]
 
 [node name="TileMapLayer" type="TileMapLayer" parent="." unique_id=484393983]
 
 [node name="Hazards" type="Node2D" parent="." unique_id=310849367]
 
 [node name="BambooLurker_1" parent="Hazards" unique_id=1789957454 instance=ExtResource("2_j0k67")]
-position = Vector2(320, 2560)
+position = Vector2(352, 2560)
 
 [node name="Enemies" type="Node2D" parent="." unique_id=2057050430]
 
 [node name="HollowedAsh_1" parent="Enemies" unique_id=1225572736 instance=ExtResource("1_i63mn")]
-position = Vector2(320, 3776)
+position = Vector2(200, 3776)
+left_patrol_marker = NodePath("../AshPatrolLeft_1")
+right_patrol_marker = NodePath("../AshPatrolRight_1")
 
 [node name="AshPatrolLeft_1" type="Marker2D" parent="Enemies" unique_id=1224414454]
 position = Vector2(128, 3776)
 
 [node name="AshPatrolRight_1" type="Marker2D" parent="Enemies" unique_id=1824659357]
-position = Vector2(512, 3776)
+position = Vector2(272, 3776)
 
 [node name="GloomWisp_1" parent="Enemies" unique_id=885852574 instance=ExtResource("4_5r5j8")]
-position = Vector2(160, 1760)
+position = Vector2(384, 1760)
 
 [node name="GloomWisp_2" parent="Enemies" unique_id=1031528189 instance=ExtResource("4_5r5j8")]
-position = Vector2(480, 1760)
+position = Vector2(512, 1760)
 
 [node name="HollowedAsh_2" parent="Enemies" unique_id=1797059928 instance=ExtResource("1_i63mn")]
-position = Vector2(320, 448)
+position = Vector2(608, 448)
 
 [node name="Events" type="Node2D" parent="." unique_id=503139415]
 
 [node name="DialogueTrigger_Grave" type="Area2D" parent="Events" unique_id=526880005]
-position = Vector2(320, 432)
+position = Vector2(32, 5472)
 collision_layer = 0
 collision_mask = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Events/DialogueTrigger_Grave" unique_id=917486783]
-shape = SubResource("RectangleShape2D_akpl7")
+shape = SubResource("RectangleShape2D_j0k67")
 
 [node name="HanaSpawnTrigger" type="Area2D" parent="Events" unique_id=670510820]
-position = Vector2(320, 4672)
+position = Vector2(96, 4672)
 collision_layer = 0
 collision_mask = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Events/HanaSpawnTrigger" unique_id=1346645701]
-shape = SubResource("RectangleShape2D_aur7v")
+shape = SubResource("RectangleShape2D_5r5j8")
 
 [node name="DialogueTrigger_FirstEnemy" type="Area2D" parent="Events" unique_id=524152457]
-position = Vector2(320, 3900)
+position = Vector2(200, 3900)
 collision_layer = 0
 collision_mask = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Events/DialogueTrigger_FirstEnemy" unique_id=1123048329]
-shape = SubResource("RectangleShape2D_ptpgp")
+shape = SubResource("RectangleShape2D_akpl7")
 
 [node name="DialogueTrigger_Corridor" type="Area2D" parent="Events" unique_id=2000429170]
-position = Vector2(320, 2900)
+position = Vector2(352, 2900)
 collision_layer = 0
 collision_mask = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Events/DialogueTrigger_Corridor" unique_id=105201033]
-shape = SubResource("RectangleShape2D_2uqsa")
+shape = SubResource("RectangleShape2D_aur7v")
 
 [node name="GloomTrigger_Corridor" type="Area2D" parent="Events" unique_id=199507092]
-position = Vector2(320, 2700)
+position = Vector2(352, 2700)
 collision_layer = 0
 collision_mask = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Events/GloomTrigger_Corridor" unique_id=1115787695]
-shape = SubResource("RectangleShape2D_lp2uw")
+shape = SubResource("RectangleShape2D_ptpgp")
 
 [node name="DialogueTrigger_Wisps" type="Area2D" parent="Events" unique_id=1902239934]
-position = Vector2(320, 2250)
+position = Vector2(448, 2250)
 collision_layer = 0
 collision_mask = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Events/DialogueTrigger_Wisps" unique_id=1801198794]
-shape = SubResource("RectangleShape2D_pdmgb")
+shape = SubResource("RectangleShape2D_2uqsa")
 
 [node name="KaitoMemoryTrigger" type="Area2D" parent="Events" unique_id=1710798219]
-position = Vector2(320, 1050)
+position = Vector2(512, 1050)
 collision_layer = 0
 collision_mask = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Events/KaitoMemoryTrigger" unique_id=839479419]
-shape = SubResource("RectangleShape2D_2jeek")
+shape = SubResource("RectangleShape2D_lp2uw")
 
 [node name="GloomClimaxTrigger" type="Area2D" parent="Events" unique_id=1639475816]
-position = Vector2(320, 780)
+position = Vector2(608, 780)
 collision_layer = 0
 collision_mask = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Events/GloomClimaxTrigger" unique_id=134741538]
-shape = SubResource("RectangleShape2D_yytvd")
+shape = SubResource("RectangleShape2D_pdmgb")
 
 [node name="LevelEnd" type="Area2D" parent="Events" unique_id=228064162]
-position = Vector2(320, 64)
+position = Vector2(620, 64)
 collision_layer = 0
 collision_mask = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Events/LevelEnd" unique_id=1747750601]
-shape = SubResource("RectangleShape2D_neuul")
+shape = SubResource("RectangleShape2D_2jeek")
 
 [node name="Props" type="Node2D" parent="." unique_id=1238250573]
-
-[node name="Ground" type="StaticBody2D" parent="Props" unique_id=3847294756]
-position = Vector2(320, 5520)
-collision_layer = 1
-collision_mask = 0
-
-[node name="GroundSprite" type="Sprite2D" parent="Props/Ground" unique_id=2957485023]
-
-[node name="GroundCollider" type="CollisionShape2D" parent="Props/Ground" unique_id=1847362948]
-shape = SubResource("RectangleShape2D_ground")
 
 [node name="GraveMarkers" type="Node2D" parent="Props" unique_id=1785721122]
 
 [node name="Grave_1" type="Sprite2D" parent="Props/GraveMarkers" unique_id=1981725541]
-position = Vector2(128, 5440)
+position = Vector2(16, 5440)
 
 [node name="Grave_2" type="Sprite2D" parent="Props/GraveMarkers" unique_id=46932814]
-position = Vector2(480, 5408)
+position = Vector2(48, 5408)
 
 [node name="Grave_3" type="Sprite2D" parent="Props/GraveMarkers" unique_id=1879855997]
-position = Vector2(320, 5376)
+position = Vector2(32, 5376)
 
 [node name="KaitoHeadband" type="Sprite2D" parent="Props" unique_id=2114324199]
-position = Vector2(320, 1216)
+position = Vector2(512, 1216)
 
 [node name="Player" parent="." unique_id=614447369 instance=ExtResource("2_vnunq")]
-position = Vector2(320, 5472)
+position = Vector2(32, 5472)
