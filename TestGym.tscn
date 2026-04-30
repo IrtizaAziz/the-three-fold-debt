@@ -1,0 +1,41 @@
+[gd_scene format=3 uid="uid://c4dkqadso2h1"]
+
+[ext_resource type="PackedScene" uid="uid://dbj13b1wobnqq" path="res://Scenes/Characters/Player.tscn" id="1_aqfkq"]
+[ext_resource type="PackedScene" uid="uid://bhudhudscene1" path="res://Scenes/UI/HUD.tscn" id="2_aqfkq"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
+size = Vector2(3000, 100)
+
+[node name="TestGym" type="Node2D" unique_id=732303771]
+
+[node name="Floor" type="StaticBody2D" parent="." unique_id=1492185133]
+position = Vector2(0, 300)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Floor" unique_id=1762779833]
+shape = SubResource("RectangleShape2D_floor")
+
+[node name="ColorRect" type="ColorRect" parent="Floor" unique_id=1182814017]
+offset_left = -1500.0
+offset_top = -50.0
+offset_right = 1500.0
+offset_bottom = 50.0
+color = Color(0.247059, 0.247059, 0.247059, 1)
+
+[node name="SpawnPoint" type="Marker2D" parent="." unique_id=42803622]
+position = Vector2(0, 100)
+
+[node name="Instructions" type="Label" parent="." unique_id=1678163690]
+offset_left = -200.0
+offset_top = 150.0
+offset_right = 200.0
+offset_bottom = 200.0
+text = "Drag Player.tscn and Enemies here to test."
+horizontal_alignment = 1
+
+[node name="Player" parent="." unique_id=1766179219 instance=ExtResource("1_aqfkq")]
+position = Vector2(139, 222)
+
+[node name="CanvasModulate" type="CanvasModulate" parent="." unique_id=1144334646]
+color = Color(0, 0, 0, 1)
+
+[node name="HUD" parent="." unique_id=1242197383 instance=ExtResource("2_aqfkq")]
