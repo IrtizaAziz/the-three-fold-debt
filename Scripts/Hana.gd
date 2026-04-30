@@ -11,8 +11,10 @@ signal player_died
 @export var light_radius: float = 150.0  # Exported so it can be tuned in the inspector
 
 var current_gloom: float = 0.0
+var current_radius: float
 var ren: Node2D
 var hana_light_radius: Area2D
+@onready var point_light = $PointLight2D
 
 const MIN_LIGHT_RADIUS: float = 40.0  # Never shrink below this; player must always have a safe zone
 
@@ -22,11 +24,8 @@ func _ready():
 	hana_light_radius = $HanaLightRadius
 	top_level = true
 	
-	# Apply the exported radius to the CircleShape2D on startup
-	if hana_light_radius:
-		var shape = hana_light_radius.get_node("CollisionShape2D")
-		if shape and shape.shape is CircleShape2D:
-			(shape.shape as CircleShape2D).radius = light_radius
+	current_radius = light_radius
+	_update_visuals()
 	
 	if ren:
 		global_position = ren.global_position
@@ -34,9 +33,20 @@ func _ready():
 func _physics_process(delta: float):
 	if not ren:
 		return
+		
+	# Recover radius very slowly over time (reduced drastically to 1.5 pixels per second)
+	if current_radius < light_radius:
+		current_radius = min(light_radius, current_radius + 1.5 * delta)
+		_update_visuals()
+	
+	# Calculate how strong Hana is (1.0 at full light, approaches 0 as she shrinks)
+	var strength_ratio = current_radius / light_radius
+	# She should NEVER perfectly keep up. We multiply her base speed by 0.4 to force her to lag.
+	# If she is fully weak, she follows at a snail's pace.
+	var dynamic_follow_speed = (follow_speed * 0.4) * max(0.2, strength_ratio)
 	
 	# Smoothly trail behind Ren's position — the lag creates a ghostly feel
-	global_position = global_position.lerp(ren.global_position, follow_speed * delta)
+	global_position = global_position.lerp(ren.global_position, dynamic_follow_speed * delta)
 	
 	if not hana_light_radius:
 		return
@@ -61,11 +71,16 @@ func _physics_process(delta: float):
 
 func reduce_light(percentage: float):
 	# Called by Gloom Wisps on contact — shrinks the safe zone by the given percentage
-	if not hana_light_radius:
-		return
-	var shape = hana_light_radius.get_node("CollisionShape2D")
-	if shape and shape.shape is CircleShape2D:
-		var circle = shape.shape as CircleShape2D
-		var new_radius = circle.radius * (1.0 - percentage)
-		circle.radius = max(new_radius, MIN_LIGHT_RADIUS)  # Never shrink below 40px
+	current_radius = max(current_radius * (1.0 - percentage), MIN_LIGHT_RADIUS)
+	_update_visuals()
+
+func _update_visuals():
+	if hana_light_radius:
+		var shape = hana_light_radius.get_node("CollisionShape2D")
+		if shape and shape.shape is CircleShape2D:
+			(shape.shape as CircleShape2D).radius = current_radius
+			
+	if point_light:
+		# Keep visual light mapped to the physical radius (150 radius = 2.0 scale)
+		point_light.texture_scale = current_radius / 75.0
 

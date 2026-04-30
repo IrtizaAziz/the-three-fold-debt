@@ -28,16 +28,25 @@ var is_dead: bool = false
 @onready var roar_ash_spawner = $RoarAshSpawner
 
 func _ready():
+	# Configure collision layers automatically via code
+	set_collision_layer_value(1, false)
+	set_collision_layer_value(3, true) # Layer 3: Enemies
+	set_collision_mask_value(1, true)  # Mask 1: Environment
+	
 	current_health = max_health
 	current_smash_windup = smash_windup
 	current_sweep_duration = sweep_duration
 
 	if smash_hitbox:
+		smash_hitbox.set_collision_mask_value(1, false)
+		smash_hitbox.set_collision_mask_value(2, true)
 		var col = smash_hitbox.get_node("CollisionShape2D")
 		if col: col.disabled = true
 		smash_hitbox.body_entered.connect(_on_smash_hitbox_body_entered)
 
 	if sweep_hitbox:
+		sweep_hitbox.set_collision_mask_value(1, false)
+		sweep_hitbox.set_collision_mask_value(2, true)
 		var col = sweep_hitbox.get_node("CollisionShape2D")
 		if col: col.disabled = true
 		sweep_hitbox.body_entered.connect(_on_sweep_hitbox_body_entered)

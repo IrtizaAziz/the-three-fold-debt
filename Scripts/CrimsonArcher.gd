@@ -25,6 +25,8 @@ func _ready():
 		if shape and shape.shape is CircleShape2D:
 			(shape.shape as CircleShape2D).radius = detection_radius
 			
+		detection_area.set_collision_mask_value(1, false)
+		detection_area.set_collision_mask_value(2, true)
 		detection_area.body_entered.connect(_on_detection_body_entered)
 		detection_area.body_exited.connect(_on_detection_body_exited)
 		

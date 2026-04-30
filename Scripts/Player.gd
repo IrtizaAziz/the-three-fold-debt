@@ -19,8 +19,8 @@ signal hana_flare
 @export var jump_force: float = -400.0
 @export var gravity: float = 980.0
 @export var fall_gravity_multiplier: float = 1.5
-@export var roll_speed: float = 350.0
-@export var roll_duration: float = 0.4
+@export var roll_speed: float = 300.0
+@export var roll_duration: float = 0.3
 @export var max_health: float = 100.0
 
 enum State { IDLE, RUN, JUMP, FALL, ROLL }
@@ -29,6 +29,7 @@ var current_state: State = State.IDLE
 var current_health: float
 var is_rolling: bool = false
 var roll_timer: float = 0.0
+var roll_cooldown_timer: float = 0.0
 var roll_direction: float = 1.0
 
 # Kaito's "Vengeful Echo"
@@ -42,7 +43,23 @@ var is_parrying: bool = false
 var parry_timer: float = 0.0
 # hitstop is handled via real-time create_timer in phantom_strike(); not a per-frame variable
 
+var invuln_timer: float = 0.0
+var is_dead: bool = false
+
 func _ready():
+	# Configure collision layers automatically via code
+	set_collision_layer_value(1, false)
+	set_collision_layer_value(2, true) # Layer 2: Player
+	set_collision_mask_value(1, true)  # Mask 1: Environment
+	set_collision_mask_value(3, true)  # Mask 3: Enemies
+
+	# Automatically map the "roll" action to the Shift key if it doesn't exist
+	if not InputMap.has_action("roll"):
+		InputMap.add_action("roll")
+		var ev = InputEventKey.new()
+		ev.physical_keycode = KEY_SHIFT
+		InputMap.action_add_event("roll", ev)
+
 	add_to_group("player")
 	current_health = max_health
 	call_deferred("emit_signal", "health_changed", current_health)
@@ -63,6 +80,24 @@ func _physics_process(delta: float):
 		parry_timer -= delta
 		if parry_timer <= 0:
 			is_parrying = false
+			
+	if invuln_timer > 0:
+		invuln_timer -= delta
+		
+	if roll_cooldown_timer > 0:
+		roll_cooldown_timer -= delta
+
+	# Check for physical contact damage with enemies (Layer 3)
+	for i in get_slide_collision_count():
+		var col = get_slide_collision(i)
+		var collider = col.get_collider()
+		if collider is CollisionObject2D and collider.get_collision_layer_value(3):
+			# Hit an enemy physically
+			if invuln_timer <= 0 and not is_rolling:
+				take_damage(10.0) # Contact damage
+				# Simple knockback bounce
+				velocity.y = jump_force * 0.5
+				velocity.x = -sign(velocity.x) * 200.0 if velocity.x != 0 else -roll_direction * 200.0
 
 	match current_state:
 		State.IDLE:
@@ -101,7 +136,7 @@ func state_idle(delta: float):
 		current_state = State.RUN
 	elif Input.is_action_just_pressed("ui_accept") and is_on_floor():
 		jump()
-	elif (Input.is_action_just_pressed("roll") or Input.is_key_pressed(KEY_SHIFT)) and is_on_floor():
+	elif Input.is_action_just_pressed("roll") and is_on_floor() and roll_cooldown_timer <= 0:
 		start_roll()
 	elif not is_on_floor():
 		current_state = State.FALL
@@ -125,7 +160,7 @@ func state_run(delta: float):
 		current_state = State.IDLE
 	elif Input.is_action_just_pressed("ui_accept") and is_on_floor():
 		jump()
-	elif (Input.is_action_just_pressed("roll") or Input.is_key_pressed(KEY_SHIFT)) and is_on_floor():
+	elif Input.is_action_just_pressed("roll") and is_on_floor() and roll_cooldown_timer <= 0:
 		start_roll()
 	elif not is_on_floor():
 		current_state = State.FALL
@@ -147,7 +182,7 @@ func state_jump(delta: float):
 	
 	if velocity.y >= 0:
 		current_state = State.FALL
-	elif Input.is_action_just_pressed("roll") or Input.is_key_pressed(KEY_SHIFT):
+	elif Input.is_action_just_pressed("roll") and roll_cooldown_timer <= 0:
 		start_roll()
 
 func state_fall(delta: float):
@@ -157,7 +192,7 @@ func state_fall(delta: float):
 	
 	if is_on_floor():
 		current_state = State.IDLE
-	elif Input.is_action_just_pressed("roll") or Input.is_key_pressed(KEY_SHIFT):
+	elif Input.is_action_just_pressed("roll") and roll_cooldown_timer <= 0:
 		start_roll()
 
 func jump():
@@ -168,8 +203,10 @@ func start_roll():
 	current_state = State.ROLL
 	is_rolling = true
 	roll_timer = roll_duration
+	roll_cooldown_timer = roll_duration + 0.8 # Adds a strict 0.8s delay AFTER the roll finishes
 	velocity.y = 0
 	velocity.x = roll_direction * roll_speed
+	set_collision_mask_value(3, false) # Pass through enemies
 
 func state_roll(delta: float):
 	roll_timer -= delta
@@ -178,14 +215,15 @@ func state_roll(delta: float):
 	
 	if roll_timer <= 0:
 		is_rolling = false
+		set_collision_mask_value(3, true) # Re-enable enemy collision
 		if is_on_floor():
 			current_state = State.IDLE if get_input_dir() == 0 else State.RUN
 		else:
 			current_state = State.FALL
 
 func take_damage(amount: float):
-	if is_rolling:
-		return # Negate damage during roll (iframes)
+	if is_rolling or invuln_timer > 0 or is_dead:
+		return # Negate damage during roll (iframes) or if already dead
 		
 	if kaito_active:
 		kaito_active = false
@@ -193,10 +231,14 @@ func take_damage(amount: float):
 		return # Damage blocked by Kaito
 		
 	current_health -= amount
+	invuln_timer = 1.0 # 1 second of invulnerability after taking damage
 	emit_signal("health_changed", current_health)
 	
 	if current_health <= 0:
 		emit_signal("player_died")
+		set_physics_process(false)
+		# Restart the scene after 1.5s so you don't fall endlessly during testing
+		get_tree().create_timer(1.5).timeout.connect(func(): get_tree().reload_current_scene())
 	
 	# Monitor Ren's health for Kaito trigger
 	if current_health > 0 and current_health <= (max_health * 0.25) and not kaito_cooldown:
@@ -218,11 +260,11 @@ var attack_debounce: float = 0.0 # Prevents spamming from continuous key presses
 
 func spectral_edge():
 	if attack_debounce > 0: return
-	attack_debounce = 0.2 # small delay between combo hits
+	attack_debounce = 0.65 # Increased delay to prevent attack spamming
 	
-	var reach = 40.0
-	if combo_step == 1: reach = 60.0
-	elif combo_step == 2: reach = 80.0
+	var reach = 55.0
+	if combo_step == 1: reach = 75.0
+	elif combo_step == 2: reach = 95.0
 	
 	combo_step += 1
 	if combo_step > 2: combo_step = 0
@@ -230,10 +272,12 @@ func spectral_edge():
 	
 	var hitbox = Area2D.new()
 	hitbox.name = "SpectralEdgeHitbox" + str(combo_step)
+	hitbox.set_collision_mask_value(1, false)
+	hitbox.set_collision_mask_value(3, true)
 	
 	var shape = CollisionShape2D.new()
 	var rect = RectangleShape2D.new()
-	rect.size = Vector2(reach, 40)
+	rect.size = Vector2(reach, 60)
 	shape.shape = rect
 	hitbox.add_child(shape)
 	
@@ -245,18 +289,20 @@ func spectral_edge():
 			body.take_damage(15.0)
 	)
 	
-	get_tree().create_timer(0.15).timeout.connect(func(): hitbox.queue_free())
+	get_tree().create_timer(0.25).timeout.connect(func(): if is_instance_valid(hitbox): hitbox.queue_free())
 
 func upward_slash():
 	if attack_debounce > 0: return
-	attack_debounce = 0.3
+	attack_debounce = 0.55
 	
 	var hitbox = Area2D.new()
 	hitbox.name = "UpwardSlashHitbox"
+	hitbox.set_collision_mask_value(1, false)
+	hitbox.set_collision_mask_value(3, true)
 	
 	var shape = CollisionShape2D.new()
 	var rect = RectangleShape2D.new()
-	rect.size = Vector2(60, 40)
+	rect.size = Vector2(70, 50)
 	shape.shape = rect
 	hitbox.add_child(shape)
 	
@@ -268,7 +314,7 @@ func upward_slash():
 			body.take_damage(20.0)
 	)
 	
-	get_tree().create_timer(0.2).timeout.connect(func(): hitbox.queue_free())
+	get_tree().create_timer(0.3).timeout.connect(func(): if is_instance_valid(hitbox): hitbox.queue_free())
 
 func phantom_strike():
 	if attack_debounce > 0: return
@@ -276,6 +322,8 @@ func phantom_strike():
 	
 	var hitbox = Area2D.new()
 	hitbox.name = "PhantomStrikeHitbox"
+	hitbox.set_collision_mask_value(1, false)
+	hitbox.set_collision_mask_value(3, true)
 	
 	var shape = CollisionShape2D.new()
 	var rect = RectangleShape2D.new()
