@@ -2,7 +2,7 @@ extends CanvasLayer
 class_name HUD
 
 @onready var health_bar: ProgressBar = $HealthBar
-@onready var gloom_bar: ProgressBar = $GloomBar
+@onready var gloom_bar: ProgressBar = $GloomMeter
 
 func _ready():
 	# Wait one frame to ensure Player and Hana are fully loaded into the scene tree
@@ -38,3 +38,13 @@ func _on_gloom_changed(new_gloom: float):
 		# Animate the gloom bar
 		var tween = create_tween()
 		tween.tween_property(gloom_bar, "value", new_gloom, 0.1).set_trans(Tween.TRANS_LINEAR)
+
+func show_gloom_meter() -> void:
+	$GloomMeter.visible = true
+
+func show_dialogue(text: String) -> void:
+	$DialogueBox/DialogueLabel.text = text
+	$DialogueBox.visible = true
+
+func hide_dialogue() -> void:
+	$DialogueBox.visible = false

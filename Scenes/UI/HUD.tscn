@@ -14,6 +14,9 @@ bg_color = Color(0, 0, 0, 1)
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gloom_fill"]
 bg_color = Color(0.294, 0, 0.51, 1)
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dialogue_bg"]
+bg_color = Color(0, 0, 0, 0.8)
+
 [node name="HUD" type="CanvasLayer"]
 script = ExtResource("1_hud")
 
@@ -28,7 +31,7 @@ fill_mode = 0
 theme_override_styles/background = SubResource("StyleBoxFlat_health_bg")
 theme_override_styles/fill = SubResource("StyleBoxFlat_health_fill")
 
-[node name="GloomBar" type="ProgressBar" parent="."]
+[node name="GloomMeter" type="ProgressBar" parent="."]
 anchor_left = 1.0
 anchor_right = 1.0
 offset_left = -216.0
@@ -38,5 +41,25 @@ offset_bottom = 36.0
 max_value = 100.0
 value = 0.0
 fill_mode = 0
+visible = false
 theme_override_styles/background = SubResource("StyleBoxFlat_gloom_bg")
 theme_override_styles/fill = SubResource("StyleBoxFlat_gloom_fill")
+
+[node name="DialogueBox" type="PanelContainer" parent="."]
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -300.0
+offset_top = -100.0
+offset_right = 300.0
+offset_bottom = -20.0
+visible = false
+theme_override_styles/panel = SubResource("StyleBoxFlat_dialogue_bg")
+
+[node name="DialogueLabel" type="Label" parent="DialogueBox"]
+layout_mode = 2
+text = ""
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+theme_override_font_sizes/font_size = 14
