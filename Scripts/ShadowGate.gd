@@ -11,6 +11,10 @@ signal gate_dissolved(zone_id: int)
 signal soul_collected(current: int, required: int)
 
 func _ready():
+	# Place on Enemy layer so Kaito's attacks (which now target Layer 3) can hit it
+	set_collision_layer_value(1, false)
+	set_collision_layer_value(3, true)
+	
 	# Wait one frame to ensure all enemies are in the scene tree before connecting
 	await get_tree().process_frame
 	var enemies = get_tree().get_nodes_in_group("zone_" + str(zone_id))
