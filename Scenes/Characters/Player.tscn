@@ -36,3 +36,7 @@ energy = 0.0
 [node name="KaitoEchoTimer" type="Timer" parent="."]
 wait_time = 2.0
 one_shot = true
+
+[node name="Camera2D" type="Camera2D" parent="."]
+zoom = Vector2(1.5, 1.5)
+position_smoothing_enabled = true

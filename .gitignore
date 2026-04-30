@@ -33,3 +33,12 @@ vgcore.*
 # AI Architect Prompts
 Architect_L1_Prompts.md
 Architect_L2_Prompts.md
+
+# Testing Environments
+TestGym.tscn
+
+# Claude Code personal settings and MCP tooling
+.claude/
+
+# Godot AI / MCP plugins (local dev tools, not game source)
+addons/

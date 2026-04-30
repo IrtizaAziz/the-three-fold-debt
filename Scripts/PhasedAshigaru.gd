@@ -36,6 +36,11 @@ var attack_timer: float = 0.0
 var attack_cooldown_timer: float = 0.0
 
 func _ready():
+	# Configure collision layers automatically via code
+	set_collision_layer_value(1, false)
+	set_collision_layer_value(3, true) # Layer 3: Enemies
+	set_collision_mask_value(1, true)  # Mask 1: Environment
+	
 	current_health = max_health
 	
 	if not left_patrol_marker.is_empty() and not right_patrol_marker.is_empty():
@@ -50,10 +55,14 @@ func _ready():
 		right_limit = global_position.x + 100.0
 		
 	if detection_area:
+		detection_area.set_collision_mask_value(1, false)
+		detection_area.set_collision_mask_value(2, true)
 		detection_area.body_entered.connect(_on_detection_body_entered)
 		detection_area.body_exited.connect(_on_detection_body_exited)
 		
 	if attack_area:
+		attack_area.set_collision_mask_value(1, false)
+		attack_area.set_collision_mask_value(2, true)
 		attack_area.body_entered.connect(_on_attack_body_entered)
 		attack_hitbox = attack_area.get_node("CollisionShape2D")
 		
@@ -76,6 +85,10 @@ func _ready():
 func _physics_process(delta: float):
 	if not is_on_floor():
 		velocity.y += gravity * delta
+		
+	if direction != 0 and attack_area:
+		attack_area.position.x = abs(attack_area.position.x) * direction
+		attack_area.scale.x = direction
 		
 	if attack_cooldown_timer > 0:
 		attack_cooldown_timer -= delta
@@ -192,13 +205,22 @@ func _on_detection_body_exited(body: Node2D):
 		player_target = null
 
 func _on_attack_body_entered(body: Node2D):
-	if body.has_method("take_damage"):
+	if body != self and body.has_method("take_damage"):
 		body.take_damage(attack_damage)
 
 func take_damage(amount: float, source_is_phantom: bool = false):
 	if is_phased and not source_is_phantom:
 		return
 	current_health -= amount
-	if current_health <= 0:
+	
+	if current_health > 0:
+		# HITSTUN: Cancel attack and force them into a brief cooldown
+		current_state = State.CHASE
+		is_attacking = false
+		if attack_hitbox:
+			attack_hitbox.disabled = true
+		attack_cooldown_timer = 0.35 # Stunned for 0.35s (gives player time to dodge)
+		velocity.x = -direction * patrol_speed * 1.5 # Slight knockback
+	else:
 		emit_signal("soul_released")
 		queue_free()

@@ -27,9 +27,13 @@ func _ready():
 		if shape and shape.shape is CircleShape2D:
 			(shape.shape as CircleShape2D).radius = trigger_radius
 			
+		detection_area.set_collision_mask_value(1, false)
+		detection_area.set_collision_mask_value(2, true)
 		detection_area.body_entered.connect(_on_detection_body_entered)
 		detection_area.body_exited.connect(_on_detection_body_exited)
 	if attack_area:
+		attack_area.set_collision_mask_value(1, false)
+		attack_area.set_collision_mask_value(2, true)
 		attack_area.body_entered.connect(_on_attack_body_entered)
 		attack_hitbox = attack_area.get_node("CollisionShape2D")
 		
@@ -63,7 +67,7 @@ func _on_detection_body_exited(body: Node2D):
 		has_triggered = false
 
 func _on_attack_body_entered(body: Node2D):
-	if body.has_method("take_damage"):
+	if body != self and body.has_method("take_damage"):
 		body.take_damage(attack_damage)
 
 func take_damage(amount: float):
