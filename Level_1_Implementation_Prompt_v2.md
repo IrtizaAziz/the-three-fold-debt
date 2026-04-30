@@ -1,11 +1,13 @@
-# Level 1 Implementation Plan v2 — Vertical Progression
+# Level 1 Implementation Plan v2 — Diagonal Progression
 ## Executable by Claude via Godot MCP
 
-**Core change from v1:** The level flows **bottom-to-top**. Ren starts at the lowest point
-(Y: 5504) and climbs upward to the exit (Y: 64). In Godot 2D, Y increases downward —
-so lower Y values are higher in the world. All coordinates below reflect this.
+**Core design:** The level flows **bottom-left to top-right** (diagonal ascent). Ren starts at the bottom-left corner
+(Y: 5504, X: 32) and climbs upward while drifting rightward to the top-right exit (Y: 0, X: 620). In Godot 2D, Y increases downward —
+so lower Y values are higher in the world. X increases left-to-right. All coordinates below reflect this diagonal path.
 
-**Level width:** 640 px (X: 0–640). Left/right walls bound the full height.
+**Diagonal formula:** `X = 640 × ((5504 - Y) / 5504)`
+
+**Level width:** 640 px (X: 0–640). Left/right walls bound the full height. The diagonal path creates natural progression.
 
 ---
 
@@ -21,7 +23,7 @@ so lower Y values are higher in the world. All coordinates below reflect this.
 7. `node_create(parent_path="/Level_1", type="Node2D", name="Events")`
 8. `node_create(parent_path="/Level_1", type="Node2D", name="Props")`
 9. Instance Player: `node_create(parent_path="/Level_1", scene_path="res://Scenes/Characters/Player.tscn", name="Player")`
-10. Set Player spawn at bottom: `node_set_property(path="/Level_1/Player", property="position", value={"x":320,"y":5472})`
+10. Set Player spawn at bottom-left: `node_set_property(path="/Level_1/Player", property="position", value={"x":32,"y":5472})`
 11. Instance HUD: `node_create(parent_path="/Level_1", scene_path="res://Scenes/UI/HUD.tscn", name="HUD")`
 12. `scene_save()`
 
@@ -108,31 +110,31 @@ wall-to-wall (including combat and platforming). Adjust individual beat heights 
 ### Task B3: Instance Enemy Scenes *(Claude via Godot MCP)*
 
 ```
-# HollowedAsh_1 — Beat 3 floor, patrols horizontally
+# HollowedAsh_1 — Beat 3, diagonal center X: 200
 node_create(parent_path="/Level_1/Enemies", scene_path="res://Scenes/Characters/HollowedAsh.tscn", name="HollowedAsh_1")
-node_set_property(path="/Level_1/Enemies/HollowedAsh_1", property="position", value={"x":320,"y":3776})
+node_set_property(path="/Level_1/Enemies/HollowedAsh_1", property="position", value={"x":200,"y":3776})
 
-# Patrol markers for Ash_1
+# Patrol markers for Ash_1 — ±72px from center
 node_create(parent_path="/Level_1/Enemies", type="Marker2D", name="AshPatrolLeft_1")
 node_set_property(path="/Level_1/Enemies/AshPatrolLeft_1", property="position", value={"x":128,"y":3776})
 node_create(parent_path="/Level_1/Enemies", type="Marker2D", name="AshPatrolRight_1")
-node_set_property(path="/Level_1/Enemies/AshPatrolRight_1", property="position", value={"x":512,"y":3776})
+node_set_property(path="/Level_1/Enemies/AshPatrolRight_1", property="position", value={"x":272,"y":3776})
 
-# BambooLurker_1 — Beat 4 narrow shaft, mid-height
+# BambooLurker_1 — Beat 4, diagonal center X: 352
 node_create(parent_path="/Level_1/Hazards", scene_path="res://Scenes/Characters/BambooLurker.tscn", name="BambooLurker_1")
-node_set_property(path="/Level_1/Hazards/BambooLurker_1", property="position", value={"x":320,"y":2560})
+node_set_property(path="/Level_1/Hazards/BambooLurker_1", property="position", value={"x":352,"y":2560})
 
-# GloomWisp_1 — Beat 5 left side
+# GloomWisp_1 — Beat 5 left of center (448 - 64 = 384)
 node_create(parent_path="/Level_1/Enemies", scene_path="res://Scenes/Characters/GloomWisp.tscn", name="GloomWisp_1")
-node_set_property(path="/Level_1/Enemies/GloomWisp_1", property="position", value={"x":160,"y":1760})
+node_set_property(path="/Level_1/Enemies/GloomWisp_1", property="position", value={"x":384,"y":1760})
 
-# GloomWisp_2 — Beat 5 right side
+# GloomWisp_2 — Beat 5 right of center (448 + 64 = 512)
 node_create(parent_path="/Level_1/Enemies", scene_path="res://Scenes/Characters/GloomWisp.tscn", name="GloomWisp_2")
-node_set_property(path="/Level_1/Enemies/GloomWisp_2", property="position", value={"x":480,"y":1760})
+node_set_property(path="/Level_1/Enemies/GloomWisp_2", property="position", value={"x":512,"y":1760})
 
-# HollowedAsh_2 — Beat 7 climax shaft guard
+# HollowedAsh_2 — Beat 7, diagonal center X: 608
 node_create(parent_path="/Level_1/Enemies", scene_path="res://Scenes/Characters/HollowedAsh.tscn", name="HollowedAsh_2")
-node_set_property(path="/Level_1/Enemies/HollowedAsh_2", property="position", value={"x":320,"y":448})
+node_set_property(path="/Level_1/Enemies/HollowedAsh_2", property="position", value={"x":608,"y":448})
 ```
 
 After instancing, save: `scene_save()`
@@ -168,17 +170,17 @@ node_set_property(path="/Level_1/Events/<TriggerName>", property="position", val
 
 Create these triggers:
 
-| Trigger Name                 | W × H    | X   | Y    |
-|------------------------------|----------|-----|------|
-| `HanaSpawnTrigger`           | 128 × 128| 320 | 4672 |
-| `DialogueTrigger_Grave`      | 640 × 64 | 320 | 5472 |
-| `DialogueTrigger_FirstEnemy` | 512 × 64 | 320 | 3900 |
-| `DialogueTrigger_Corridor`   | 192 × 64 | 320 | 2900 |
-| `GloomTrigger_Corridor`      | 192 × 64 | 320 | 2700 |
-| `DialogueTrigger_Wisps`      | 512 × 64 | 320 | 2250 |
-| `KaitoMemoryTrigger`         | 192 × 64 | 320 | 1050 |
-| `GloomClimaxTrigger`         | 256 × 64 | 320 | 780  |
-| `LevelEnd`                   | 200 × 32 | 320 | 64   |
+| Trigger Name                 | W × H    | X   | Y    | Notes |
+|------------------------------|----------|-----|------|-------|
+| `HanaSpawnTrigger`           | 128 × 128| 96  | 4672 | Diagonal center Beat 1 |
+| `DialogueTrigger_Grave`      | 640 × 64 | 32  | 5472 | Bottom-left, Beat 0 |
+| `DialogueTrigger_FirstEnemy` | 512 × 64 | 200 | 3900 | Diagonal center Beat 3 |
+| `DialogueTrigger_Corridor`   | 192 × 64 | 352 | 2900 | Diagonal center Beat 4 |
+| `GloomTrigger_Corridor`      | 192 × 64 | 352 | 2700 | Diagonal center Beat 4 |
+| `DialogueTrigger_Wisps`      | 512 × 64 | 448 | 2250 | Diagonal center Beat 5 |
+| `KaitoMemoryTrigger`         | 192 × 64 | 512 | 1050 | Diagonal center Beat 6 |
+| `GloomClimaxTrigger`         | 256 × 64 | 608 | 780  | Diagonal center Beat 7 |
+| `LevelEnd`                   | 200 × 32 | 620 | 64   | Top-right, Beat 8 |
 
 After all triggers created: `scene_save()`
 
@@ -262,31 +264,31 @@ Verify `Level_1.tscn` is saved in FileSystem dock.
 If Phases 1–7 were completed with horizontal coordinates, reposition using:
 
 ```
-# Enemies
-node_set_property(path="/Level_1/Enemies/HollowedAsh_1", property="position", value={"x":320,"y":3776})
+# Enemies (diagonal positions)
+node_set_property(path="/Level_1/Enemies/HollowedAsh_1", property="position", value={"x":200,"y":3776})
 node_set_property(path="/Level_1/Enemies/AshPatrolLeft_1", property="position", value={"x":128,"y":3776})
-node_set_property(path="/Level_1/Enemies/AshPatrolRight_1", property="position", value={"x":512,"y":3776})
-node_set_property(path="/Level_1/Hazards/BambooLurker_1", property="position", value={"x":320,"y":2560})
-node_set_property(path="/Level_1/Enemies/GloomWisp_1", property="position", value={"x":160,"y":1760})
-node_set_property(path="/Level_1/Enemies/GloomWisp_2", property="position", value={"x":480,"y":1760})
-node_set_property(path="/Level_1/Enemies/HollowedAsh_2", property="position", value={"x":320,"y":448})
-node_set_property(path="/Level_1/Player", property="position", value={"x":320,"y":5472})
+node_set_property(path="/Level_1/Enemies/AshPatrolRight_1", property="position", value={"x":272,"y":3776})
+node_set_property(path="/Level_1/Hazards/BambooLurker_1", property="position", value={"x":352,"y":2560})
+node_set_property(path="/Level_1/Enemies/GloomWisp_1", property="position", value={"x":384,"y":1760})
+node_set_property(path="/Level_1/Enemies/GloomWisp_2", property="position", value={"x":512,"y":1760})
+node_set_property(path="/Level_1/Enemies/HollowedAsh_2", property="position", value={"x":608,"y":448})
+node_set_property(path="/Level_1/Player", property="position", value={"x":32,"y":5472})
 
-# Triggers
-node_set_property(path="/Level_1/Events/HanaSpawnTrigger", property="position", value={"x":320,"y":4672})
-node_set_property(path="/Level_1/Events/DialogueTrigger_FirstEnemy", property="position", value={"x":320,"y":3900})
-node_set_property(path="/Level_1/Events/DialogueTrigger_Corridor", property="position", value={"x":320,"y":2900})
-node_set_property(path="/Level_1/Events/GloomTrigger_Corridor", property="position", value={"x":320,"y":2700})
-node_set_property(path="/Level_1/Events/DialogueTrigger_Wisps", property="position", value={"x":320,"y":2250})
-node_set_property(path="/Level_1/Events/KaitoMemoryTrigger", property="position", value={"x":320,"y":1050})
-node_set_property(path="/Level_1/Events/GloomClimaxTrigger", property="position", value={"x":320,"y":780})
-node_set_property(path="/Level_1/Events/LevelEnd", property="position", value={"x":320,"y":64})
+# Triggers (diagonal positions)
+node_set_property(path="/Level_1/Events/HanaSpawnTrigger", property="position", value={"x":96,"y":4672})
+node_set_property(path="/Level_1/Events/DialogueTrigger_FirstEnemy", property="position", value={"x":200,"y":3900})
+node_set_property(path="/Level_1/Events/DialogueTrigger_Corridor", property="position", value={"x":352,"y":2900})
+node_set_property(path="/Level_1/Events/GloomTrigger_Corridor", property="position", value={"x":352,"y":2700})
+node_set_property(path="/Level_1/Events/DialogueTrigger_Wisps", property="position", value={"x":448,"y":2250})
+node_set_property(path="/Level_1/Events/KaitoMemoryTrigger", property="position", value={"x":512,"y":1050})
+node_set_property(path="/Level_1/Events/GloomClimaxTrigger", property="position", value={"x":608,"y":780})
+node_set_property(path="/Level_1/Events/LevelEnd", property="position", value={"x":620,"y":64})
 
-# Props
-node_set_property(path="/Level_1/Props/GraveMarker_1", property="position", value={"x":128,"y":5440})
-node_set_property(path="/Level_1/Props/GraveMarker_2", property="position", value={"x":480,"y":5408})
-node_set_property(path="/Level_1/Props/GraveMarker_3", property="position", value={"x":320,"y":5376})
-node_set_property(path="/Level_1/Props/KaitoHeadband", property="position", value={"x":320,"y":1216})
+# Props (diagonal positions, bottom-left to diagonal center)
+node_set_property(path="/Level_1/Props/GraveMarkers/Grave_1", property="position", value={"x":16,"y":5440})
+node_set_property(path="/Level_1/Props/GraveMarkers/Grave_2", property="position", value={"x":48,"y":5408})
+node_set_property(path="/Level_1/Props/GraveMarkers/Grave_3", property="position", value={"x":32,"y":5376})
+node_set_property(path="/Level_1/Props/KaitoHeadband", property="position", value={"x":512,"y":1216})
 ```
 
 Also move HollowedAsh_2 from Level_1 root into Enemies container if it's at the wrong level:

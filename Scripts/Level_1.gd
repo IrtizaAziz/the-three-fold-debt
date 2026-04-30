@@ -47,7 +47,9 @@ func _on_kaito_memory_trigger_body_entered(body: Node2D) -> void:
 		return
 	kaito_triggered = true
 	$HUD.show_dialogue("...Kaito. He died right here. Right on this ground.")
-	await get_tree().create_timer(2.0).timeout
+	await get_tree().create_timer(4.0).timeout
+	# Fire Kaito Echo signal for Atmosphere Lead's blue flash Tween
+	$Player.kaito_echo_triggered.emit()
 	$HUD.show_dialogue("Move, little brother. Grieve later.")
 	await get_tree().create_timer(4.0).timeout
 	$HUD.hide_dialogue()

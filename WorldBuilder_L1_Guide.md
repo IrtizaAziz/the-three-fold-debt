@@ -125,55 +125,58 @@ Create these 4 tile types in your TileSet. If the Artist hasn't delivered tiles,
 
 ### Level Coordinate System
 
-The level flows **bottom-to-top**. Ren starts at the bottom — literally buried, dead — and must climb upward to escape. This maps directly to the resurrection arc: descending into death, rising back into the world.
+The level flows **bottom-left to top-right** (diagonal ascent). Ren starts buried in the bottom-left corner and climbs upward while drifting rightward to escape. This maps directly to the resurrection arc: ascending from death in darkness (left, low) toward the living world in light (right, high).
 
-In Godot 2D, Y increases downward. Lower Y = higher in the world. Use these approximate Y coordinates as beat anchors (in pixels, with 64px tile size):
+In Godot 2D, Y increases downward. Lower Y = higher in the world. X increases left-to-right. Use these coordinates:
+
+**Diagonal Formula:** `X = 640 × ((5504 - Y) / 5504)` — as player climbs, center X drifts rightward.
 
 ```
-Y=0        Y=128      Y=768      Y=1280    Y=2240    Y=2880    Y=3840    Y=4480    Y=5504
-[EXIT]──[CLIMAX]──[KAITO]──[WISPS]──[CORRIDOR]──[ASH_1]──[CLIMB]──[HANA]──[GRAVE]
- ↑ top                                                                      bottom ↓
+Y=0 (X≈620)                                                    Y=5504 (X≈32)
+    [EXIT]                                                      [GRAVE]
+         ↗ diagonal path (bottom-left to top-right) ↗
+                    640px wide, full height
 ```
 
-**Level width:** 640 px (10 tiles × 64 px). Left and right walls (`SolidGround`) bound the entire height. The player cannot escape left or right — the only freedom is vertical.
+**Level width:** 640 px (10 tiles × 64 px). Left and right walls bound the full height. The player climbs diagonally, naturally moving rightward as they ascend.
 
-| Beat | Name             | Y Range       | Approx. Height |
-|------|------------------|---------------|----------------|
-| 0    | The Grave        | 5504 → 4864   | 640 px (10 tiles) |
-| 1    | Hana's Discovery | 4864 → 4480   | 384 px (6 tiles) |
-| 2    | First Climb      | 4480 → 3840   | 640 px (10 tiles) |
-| 3    | Open Chamber     | 3840 → 2880   | 960 px (15 tiles) |
-| 4    | Narrow Shaft     | 2880 → 2240   | 640 px (10 tiles) |
-| 5    | Open Grove       | 2240 → 1280   | 960 px (15 tiles) |
-| 6    | Kaito's Memory   | 1280 → 768    | 512 px (8 tiles) |
-| 7    | Climax Corridor  | 768 → 128     | 640 px (10 tiles) |
-| 8    | Exit             | 128 → 0       | 128 px (2 tiles) |
+| Beat | Name             | Y Range       | Center Y | Center X | Height |
+|------|------------------|---------------|----------|----------|--------|
+| 0    | The Grave        | 5504 → 4864   | 5184     | **32**   | 640 px |
+| 1    | Hana's Discovery | 4864 → 4480   | 4672     | **96**   | 384 px |
+| 2    | First Climb      | 4480 → 3840   | 4160     | **160**  | 640 px |
+| 3    | Open Chamber     | 3840 → 2880   | 3360     | **200**  | 960 px |
+| 4    | Narrow Shaft     | 2880 → 2240   | 2560     | **352**  | 640 px |
+| 5    | Open Grove       | 2240 → 1280   | 1760     | **448**  | 960 px |
+| 6    | Kaito's Memory   | 1280 → 768    | 1024     | **512**  | 512 px |
+| 7    | Climax Corridor  | 768 → 128     | 448      | **608**  | 640 px |
+| 8    | Exit             | 128 → 0       | 64       | **620**  | 128 px |
 
 ---
 
-### BEAT 0 — The Grave `(Y: 5504–4864, bottom of level)`
+### BEAT 0 — The Grave `(Y: 5504–4864, X: 0–96, bottom-left)`
 
 **What the player sees:**
-Total darkness. The `CanvasModulate` at `#1A0030` makes the ground barely a shade lighter than the sky. No color. No light. Three broken grave markers visible as dark silhouettes. Ren's silhouette stands in mud at the lowest point of the world.
+Total darkness. The `CanvasModulate` at `#1A0030` makes the ground barely a shade lighter than the sky. No color. No light. Three broken grave markers visible as dark silhouettes. Ren's silhouette stands in mud in the bottom-left corner of the world — the lowest, darkest point.
 
 **Tile layout:**
 ```
-[GRND][    ][    ][    ][    ][    ][    ][    ][    ][GRND]   ← ceiling (Y: 4864) — 1-tile gap at center (tiles 4–5)
-[GRND][    ][    ][    ][    ][    ][    ][    ][    ][GRND]   ← air
+[GRND][    ][    ][    ][    ][    ][    ][    ][    ][GRND]   ← ceiling (Y: 4864)
 [GRND][    ][    ][    ][    ][    ][    ][    ][    ][GRND]   ← air (grave markers here)
+[GRND][    ][    ][    ][    ][    ][    ][    ][    ][GRND]   ← air
 [GRND][GRND][GRND][GRND][GRND][GRND][GRND][GRND][GRND][GRND] ← floor (Y: 5504)
 ```
-10 tiles wide, fully enclosed on left and right. A 2-tile opening in the ceiling (tiles 4–5, center) leads upward into Beat 1.
+10 tiles wide. A small 2-tile gap in the ceiling (tiles 0–1, left side, around X: 32) leads upward into Beat 1. Diagonal path starts at left wall.
 
-**Player start position:** `Vector2(320, 5472)` — center of level, standing on the floor.
+**Player start position:** `Vector2(32, 5472)` — left side of level, standing on the floor.
 
 **Triggers:**
-- `DialogueTrigger_Grave` (Area2D): Full-width strip at floor level, 128px tall. Fires 1 second after scene loads via `_ready()` auto-trigger, not on body_entered.
+- `DialogueTrigger_Grave` (Area2D): Full-width strip at floor level, 128px tall. Fires 1 second after scene loads via `_ready()` auto-trigger, not on body_entered. Position: (32, 5472).
 
 **Props:**
-- `GraveMarkers`: 3 × Sprite2D at positions `(128, 5440)`, `(480, 5408)`, `(320, 5376)`. Broken wooden grave markers, tilted at different angles.
+- `GraveMarkers`: 3 × Sprite2D at positions `(16, 5440)`, `(48, 5408)`, `(32, 5376)` — clustered on left side. Broken wooden grave markers, tilted at different angles.
 
-**Design intent:** The player feels the weight of nothing. They try to move left — wall. They try to move right — wall. They look up — a faint gap in the ceiling. The only way is up. The vertical ascent is established immediately as the sole direction of escape.
+**Design intent:** The player feels the weight of nothing, isolated in a dark corner. They try to move left — wall. They try to move right and find more darkness. They look up — a small gap in the ceiling to the left. The only escape is upward and slightly rightward. The diagonal ascent is established immediately as the sole direction forward.
 
 ---
 
@@ -193,7 +196,7 @@ Full 10 tiles wide. Left/right bamboo columns create the feel of a root system. 
 
 **HanaSpawnTrigger setup:**
 - Shape: `RectangleShape2D`, size `128×128` px
-- Position: center of level, Y: 4672 (X: 320)
+- Position: Y: 4672, X: 96 (diagonal center line of Beat 1)
 - `body_entered` signal → `Level_1._on_hana_spawn(body)`
 - One-shot: set a `has_fired` bool to prevent re-triggering
 
@@ -250,9 +253,10 @@ A wide, open chamber — the most generous space in the level so far. Room to br
 Full 10 tiles wide (640px). 15 tiles tall. HollowedAsh_1 patrols across the floor.
 
 **HollowedAsh_1 configuration in Inspector:**
+- Position: `(200, 3776)` — diagonal center line of Beat 3
 ```
-left_patrol_marker  → AshPatrolLeft_1  (at X: 128, Y: 3776)
-right_patrol_marker → AshPatrolRight_1 (at X: 512, Y: 3776)
+left_patrol_marker  → AshPatrolLeft_1  (at X: 128, Y: 3776) — offset left by 72px
+right_patrol_marker → AshPatrolRight_1 (at X: 272, Y: 3776) — offset right by 72px
 ```
 Set these two `Marker2D` nodes as children of the `Enemies` container, NOT inside the Ash scene.
 
@@ -263,7 +267,7 @@ Set these two `Marker2D` nodes as children of the `Enemies` container, NOT insid
 
 **DialogueTrigger_FirstEnemy:**
 - Shape: `RectangleShape2D`, `512×64px` (full-width horizontal strip)
-- Position: Y: 3900, X: 320 — fires as Ren drops into the chamber, before Ash detects him
+- Position: Y: 3900, X: 200 — fires as Ren drops into the chamber, before Ash detects him
 - Fires before the Ash detects Ren — the monologue plays while Ren watches the patrol from above
 
 **Design intent:** Safe first combat. The space is generous. The enemy is slow and readable. The real danger is if the player drops back down — away from Hana — and the Gloom meter punishes them for it. The lesson: don't retreat from the enemy by abandoning Hana.
@@ -289,17 +293,17 @@ The open chamber above suddenly closes in. Bamboo walls press from both sides, s
 
 **GloomTrigger_Corridor:**
 - Shape: `RectangleShape2D`, `192×64px` (shaft width × 1 tile)
-- Position: Y: 2700, X: 320 — covers the mid-entry zone of the shaft
+- Position: Y: 2700, X: 352 — covers the mid-entry zone of the shaft
 - When player body enters: signals `gloom_fill_override(20.0)` — fills at 20/s instead of 10/s (ask Architect to implement)
 
 **BambooLurker_1 configuration:**
 - `trigger_radius`: `100.0` (default — verify in Inspector)
-- Position: X: 320, Y: 2560 — flush against right inner bamboo wall, mid-shaft
+- Position: X: 352, Y: 2560 — on the diagonal center line, mid-shaft
 - **Must look identical to regular bamboo in IDLE state.** The Visual Artist makes this possible — coordinate with them.
 
 **DialogueTrigger_Corridor:**
 - Shape: `RectangleShape2D`, `192×64px` (full shaft width)
-- Position: Y: 2900, X: 320 — at the shaft entrance as Ren climbs in
+- Position: Y: 2900, X: 352 — at the shaft entrance as Ren climbs in
 - Fires: *"Stay close. The Gloom feeds on loneliness — it always has."*
 
 **Design intent:** The Bamboo Lurker is a trust violation. The player has just learned the grove has rules: enemies are clearly visible, space is generous. Then the shaft breaks both rules. The Lurker is invisible; the space is a trap. This beat teaches: in the Whispering Grove, anything can be an enemy.
@@ -315,14 +319,14 @@ Emerging from the narrow shaft into a wide open chamber feels like a breath. Ful
 ```
 [GRND][    ][    ][    ][    ][    ][    ][    ][    ][GRND]  ← Y: 1280 — leads up into Beat 6
 [GRND][    ][    ][    ][    ][    ][    ][    ][    ][GRND]  ← air
-[GRND][    ][    ][PLAT][PLAT][PLAT][PLAT][    ][    ][GRND]  ← decorative platform (Y: 1760)
+[GRND][    ][    ][PLAT][PLAT][PLAT][PLAT][    ][    ][GRND]  ← decorative platform (Y: 1760, center area)
 [GRND][    ][    ][    ][    ][    ][    ][    ][    ][GRND]  ← GloomWisp_1 (left) / GloomWisp_2 (right)
 [GRND][    ][    ][    ][    ][    ][    ][    ][    ][GRND]  ← DialogueTrigger_Wisps
 [GRND][    ][    ][    ][    ][    ][    ][    ][    ][GRND]  ← Y: 2240 — open from shaft top
 ```
-15 tiles tall (960 px). Full width throughout.
-- `GloomWisp_1`: X: 160, Y: 1760 (left side, mid-height)
-- `GloomWisp_2`: X: 480, Y: 1760 (right side, mid-height)
+15 tiles tall (960 px). Full width throughout. Diagonal center line at X: 448.
+- `GloomWisp_1`: X: 384, Y: 1760 (left of center, mid-height) — offset left 64px from center
+- `GloomWisp_2`: X: 512, Y: 1760 (right of center, mid-height) — offset right 64px from center
 
 **Wisp behavior (no setup required — scripts auto-target Hana):**
 - Speed: `30px/s` toward Hana's `global_position`
@@ -336,7 +340,7 @@ Emerging from the narrow shaft into a wide open chamber feels like a breath. Ful
 
 **DialogueTrigger_Wisps:**
 - Shape: `RectangleShape2D`, `512×64px` (full-width strip)
-- Position: Y: 2250, X: 320 — fires as Ren exits the shaft into open space
+- Position: Y: 2250, X: 448 — fires as Ren exits the shaft into open space
 - Text: *"Hana — hold on! Don't let them snuff you out!"*
 
 **Design intent:** The Wisps reframe the threat. For the first time, the danger isn't to Ren — it's to Hana. The player has been thinking "protect myself." Now they must think "protect her." This is the emotional heart of the level. If Hana's light shrinks enough, the Gloom meter climbs faster, and the remaining level becomes harder. The consequence is felt, not instant.
@@ -352,14 +356,14 @@ A single wide platform spanning the full level width. Completely flat. No enemie
 ```
 [GRND][    ][    ][    ][    ][    ][    ][    ][    ][GRND]  ← Y: 768 — leads up into Beat 7
 [GRND][    ][    ][    ][    ][    ][    ][    ][    ][GRND]  ← air
-[GRND][    ][    ][    ][    ][    ][    ][    ][    ][GRND]  ← KaitoHeadband at (320, 1216)
+[GRND][    ][    ][    ][    ][    ][    ][    ][    ][GRND]  ← KaitoHeadband at (512, 1216) — diagonal center
 [GRND][GRND][GRND][GRND][GRND][GRND][GRND][GRND][GRND][GRND] ← floor (Y: 1280, from Beat 5)
 ```
-8 tiles tall (512 px). Full width. KaitoMemoryTrigger Area2D covers the headband sprite (X: 320, Y: 1216).
+8 tiles tall (512 px). Full width. KaitoMemoryTrigger Area2D covers the headband sprite (X: 512, Y: 1216).
 
 **KaitoMemoryTrigger setup:**
 - Shape: `RectangleShape2D`, `192×64px`
-- Position: X: 320, Y: 1050 — slightly above the headband, fires as Ren approaches it climbing
+- Position: X: 512, Y: 1050 — slightly above the headband, fires as Ren approaches it climbing on diagonal path
 - `body_entered` → fires two-part dialogue sequence:
   1. Immediately: *"...Kaito. He died right here. Right on this ground."* (4s)
   2. After 2-second pause: `kaito_echo_triggered` signal fires (Atmosphere Lead's blue flash)
@@ -403,14 +407,14 @@ The vertical shaft tightens again — 4 tiles wide (256 px), straight up. The gr
 10 tiles tall (640 px). Inner passage is tiles 3–6 (X: 192–416). Outer walls are impassable.
 
 **HollowedAsh_2 configuration:**
-- Position: X: 320, Y: 448 — center of the shaft, mid-height
+- Position: X: 608, Y: 448 — on diagonal path, mid-height of shaft
 - Does NOT use patrol markers — immediately enters CHASE when Ren is within 200px
 - Same stats as Ash_1 (HP 30, attack 20)
 - Player can either: fight (2 hits, ~2 seconds), or roll through (0.4s iframes bypass the attack window)
 
 **GloomClimaxTrigger (Area2D):**
 - Shape: `256×64px` strip (inner shaft width × 1 tile)
-- Position: Y: 780, X: 320 — at the shaft entrance as Ren climbs in
+- Position: Y: 780, X: 608 — at the shaft entrance as Ren climbs in on diagonal path
 - `body_entered` → signals to Architect's script that Gloom should fill at `20/s` (double rate)
 
 **DialogueTrigger Behavior:**
@@ -433,7 +437,7 @@ A small platform at the very top of the world. Flat, wide, safe. The Gloom stops
 
 **LevelEnd configuration:**
 - Shape: `RectangleShape2D`, `200×32px` (horizontal strip, top edge of exit platform)
-- Position: X: 320, Y: 64 — at the ceiling of the exit area
+- Position: X: 620, Y: 64 — at the ceiling, on diagonal path (top-right area)
 - `body_entered` signal → `Level_1._on_level_end_body_entered(body)`
 
 ```gdscript
@@ -621,15 +625,15 @@ All triggers need a `CollisionShape2D` child with these dimensions. Positions ar
 
 | Trigger | Shape | Width × Height | Position (X, Y) | Notes |
 |---------|-------|----------------|-----------------|-------|
-| `HanaSpawnTrigger` | Rectangle | `128 × 128` | (320, 4672) | Mid-height of Beat 1, fires on climb |
-| `GloomTrigger_Corridor` | Rectangle | `192 × 64` | (320, 2700) | Shaft mid-zone; fills Gloom at 20/s |
-| `GloomClimaxTrigger` | Rectangle | `256 × 64` | (320, 780) | Shaft entry; fills Gloom at 20/s |
-| `DialogueTrigger_Grave` | Rectangle | `640 × 64` | (320, 5472) | Full width of grave floor (auto-fires in _ready anyway) |
-| `DialogueTrigger_FirstEnemy` | Rectangle | `512 × 64` | (320, 3900) | Drop-in strip at Beat 3 chamber entry |
-| `DialogueTrigger_Corridor` | Rectangle | `192 × 64` | (320, 2900) | Full shaft width at shaft entry |
-| `DialogueTrigger_Wisps` | Rectangle | `512 × 64` | (320, 2250) | Full-width strip at Beat 5 open grove entry |
-| `KaitoMemoryTrigger` | Rectangle | `192 × 64` | (320, 1050) | Above headband prop, fires on approach |
-| `LevelEnd` | Rectangle | `200 × 32` | (320, 64) | Thin horizontal strip at top of exit area |
+| `HanaSpawnTrigger` | Rectangle | `128 × 128` | (96, 4672) | Diagonal center of Beat 1, fires on climb |
+| `GloomTrigger_Corridor` | Rectangle | `192 × 64` | (352, 2700) | Shaft mid-zone; fills Gloom at 20/s |
+| `GloomClimaxTrigger` | Rectangle | `256 × 64` | (608, 780) | Shaft entry; fills Gloom at 20/s |
+| `DialogueTrigger_Grave` | Rectangle | `640 × 64` | (32, 5472) | Full width of grave floor (auto-fires in _ready anyway) |
+| `DialogueTrigger_FirstEnemy` | Rectangle | `512 × 64` | (200, 3900) | Drop-in strip at Beat 3 chamber entry |
+| `DialogueTrigger_Corridor` | Rectangle | `192 × 64` | (352, 2900) | Full shaft width at shaft entry |
+| `DialogueTrigger_Wisps` | Rectangle | `512 × 64` | (448, 2250) | Full-width strip at Beat 5 open grove entry |
+| `KaitoMemoryTrigger` | Rectangle | `192 × 64` | (512, 1050) | Above headband prop on diagonal path |
+| `LevelEnd` | Rectangle | `200 × 32` | (620, 64) | Thin horizontal strip at top (top-right area) |
 
 **All triggers:** Collision Layer `0` (no self-layer), Mask `2` (player layer). No physics bodies — detection only.
 
