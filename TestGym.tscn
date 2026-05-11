@@ -1,12 +1,17 @@
 [gd_scene format=3 uid="uid://c4dkqadso2h1"]
 
+[ext_resource type="Script" path="res://Scripts/TestGym.gd" id="0_script"]
 [ext_resource type="PackedScene" uid="uid://dbj13b1wobnqq" path="res://Scenes/Characters/Player.tscn" id="1_aqfkq"]
 [ext_resource type="PackedScene" uid="uid://bhudhudscene1" path="res://Scenes/UI/HUD.tscn" id="2_aqfkq"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
 size = Vector2(3000, 100)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_killzone"]
+size = Vector2(3000, 100)
+
 [node name="TestGym" type="Node2D" unique_id=732303771]
+script = ExtResource("0_script")
 
 [node name="Floor" type="StaticBody2D" parent="." unique_id=1492185133]
 position = Vector2(0, 300)
@@ -39,3 +44,13 @@ position = Vector2(139, 222)
 color = Color(0, 0, 0, 1)
 
 [node name="HUD" parent="." unique_id=1242197383 instance=ExtResource("2_aqfkq")]
+
+[node name="KillZone" type="Area2D" parent="."]
+position = Vector2(0, 450)
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="KillZone"]
+shape = SubResource("RectangleShape2D_killzone")
+
+[connection signal="body_entered" from="KillZone" to="." method="_on_kill_zone_body_entered"]

@@ -27,6 +27,7 @@ offset_right = 216.0
 offset_bottom = 36.0
 max_value = 100.0
 value = 100.0
+visible = false
 fill_mode = 0
 theme_override_styles/background = SubResource("StyleBoxFlat_health_bg")
 theme_override_styles/fill = SubResource("StyleBoxFlat_health_fill")
