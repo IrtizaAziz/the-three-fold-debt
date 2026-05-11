@@ -42,6 +42,9 @@ func _on_gloom_changed(new_gloom: float):
 func show_gloom_meter() -> void:
 	$GloomMeter.visible = true
 
+func show_health_bar() -> void:
+	$HealthBar.visible = true
+
 func show_dialogue(text: String) -> void:
 	$DialogueBox/DialogueLabel.text = text
 	$DialogueBox.visible = true

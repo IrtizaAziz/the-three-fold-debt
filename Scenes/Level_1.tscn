@@ -34,7 +34,20 @@ size = Vector2(256, 64)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2jeek"]
 size = Vector2(200, 32)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_killzone"]
+size = Vector2(800, 128)
+
+[sub_resource type="RectangleShape2D" id="PlatShape_WIDE"]
+size = Vector2(300, 32)
+
+[sub_resource type="RectangleShape2D" id="PlatShape_MED"]
+size = Vector2(250, 32)
+
+[sub_resource type="RectangleShape2D" id="PlatShape_NARROW"]
+size = Vector2(200, 32)
+
 [node name="Level_1" type="Node2D" unique_id=2136243702]
+position = Vector2(300, 261)
 script = ExtResource("1_nh7xm")
 
 [node name="CanvasModulate" type="CanvasModulate" parent="." unique_id=558901181]
@@ -48,6 +61,14 @@ color = Color(0.101960786, 0, 0.1882353, 1)
 
 [node name="BambooLurker_1" parent="Hazards" unique_id=1789957454 instance=ExtResource("2_j0k67")]
 position = Vector2(352, 2560)
+
+[node name="KillZone" type="Area2D" parent="Hazards" unique_id=241242885]
+position = Vector2(320, 5600)
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hazards/KillZone"]
+shape = SubResource("RectangleShape2D_killzone")
 
 [node name="Enemies" type="Node2D" parent="." unique_id=2057050430]
 
@@ -161,5 +182,18 @@ position = Vector2(32, 5376)
 [node name="KaitoHeadband" type="Sprite2D" parent="Props" unique_id=2114324199]
 position = Vector2(512, 1216)
 
+[node name="Platforms" type="Node2D" parent="."]
+
 [node name="Player" parent="." unique_id=614447369 instance=ExtResource("2_vnunq")]
-position = Vector2(32, 5472)
+position = Vector2(86, 5404)
+
+[connection signal="body_entered" from="Hazards/KillZone" to="." method="_on_kill_zone_body_entered"]
+[connection signal="body_entered" from="Events/HanaSpawnTrigger" to="." method="_on_hana_spawn_trigger_body_entered"]
+[connection signal="body_entered" from="Events/DialogueTrigger_FirstEnemy" to="." method="_on_dialogue_trigger_first_enemy_body_entered"]
+[connection signal="body_entered" from="Events/DialogueTrigger_Corridor" to="." method="_on_dialogue_trigger_corridor_body_entered"]
+[connection signal="body_entered" from="Events/GloomTrigger_Corridor" to="." method="_on_gloom_trigger_corridor_body_entered"]
+[connection signal="body_entered" from="Events/DialogueTrigger_Wisps" to="." method="_on_dialogue_trigger_wisps_body_entered"]
+[connection signal="body_entered" from="Events/KaitoMemoryTrigger" to="." method="_on_kaito_memory_trigger_body_entered"]
+[connection signal="body_entered" from="Events/GloomClimaxTrigger" to="." method="_on_gloom_climax_trigger_body_entered"]
+[connection signal="body_entered" from="Events/LevelEnd" to="." method="_on_level_end_body_entered"]
+[connection signal="player_died" from="Player" to="." method="_on_player_died"]
