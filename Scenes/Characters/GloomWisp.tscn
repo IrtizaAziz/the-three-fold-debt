@@ -1,12 +1,98 @@
-[gd_scene load_steps=3 format=3 uid="uid://b4n5v6c7x8z9"]
+[gd_scene format=3 uid="uid://b4n5v6c7x81a"]
 
-[ext_resource type="Script" path="res://Scripts/GloomWisp.gd" id="1_w2i3s"]
+[ext_resource type="Script" uid="uid://ckv1fomcn0uqr" path="res://Scripts/GloomWisp.gd" id="1_w2i3s"]
+[ext_resource type="Texture2D" uid="uid://dnfvc1er1w1dn" path="res://Assets/Sprites/Enemies/Gloom wisp FINALL.png" id="2_u6jes"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_g1w2p"]
 radius = 12.0
 
-[node name="GloomWisp" type="Area2D"]
+[sub_resource type="AtlasTexture" id="AtlasTexture_fnjes"]
+atlas = ExtResource("2_u6jes")
+region = Rect2(0, 0, 24, 24)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_6kff2"]
+atlas = ExtResource("2_u6jes")
+region = Rect2(24, 0, 24, 24)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_u5b7a"]
+atlas = ExtResource("2_u6jes")
+region = Rect2(48, 0, 24, 24)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kartk"]
+atlas = ExtResource("2_u6jes")
+region = Rect2(72, 0, 24, 24)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_sbq2a"]
+atlas = ExtResource("2_u6jes")
+region = Rect2(96, 0, 24, 24)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_22sci"]
+atlas = ExtResource("2_u6jes")
+region = Rect2(120, 0, 24, 24)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_vui3k"]
+atlas = ExtResource("2_u6jes")
+region = Rect2(144, 0, 24, 24)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_6b0au"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_fnjes")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6kff2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_u5b7a")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kartk")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_sbq2a")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_22sci")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_vui3k")
+}],
+"loop": true,
+"name": &"pulse",
+"speed": 8.0
+}]
+
+[sub_resource type="Gradient" id="Gradient_fgxie"]
+offsets = PackedFloat32Array(0, 0.66188526, 0.6659836, 1)
+colors = PackedColorArray(0, 0, 0, 1, 0.66188526, 0.66188526, 0.66188526, 1, 0.9282787, 0.9282787, 0.9282787, 1, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_v74ls"]
+gradient = SubResource("Gradient_fgxie")
+width = 247
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_b5wmn"]
+particle_flag_disable_z = true
+spread = 11.887
+initial_velocity_min = 10.0
+initial_velocity_max = 10.0
+gravity = Vector3(0, 98, 0)
+scale_min = 3.0
+scale_max = 6.0
+color = Color(0.22745098, 0, 0.3764706, 0.63529414)
+color_ramp = SubResource("GradientTexture1D_v74ls")
+
+[node name="GloomWisp" type="Area2D" unique_id=169939725]
 script = ExtResource("1_w2i3s")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=544843806]
 shape = SubResource("CircleShape2D_g1w2p")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1776163173]
+sprite_frames = SubResource("SpriteFrames_6b0au")
+animation = &"pulse"
+
+[node name="WispTrailParticles" type="GPUParticles2D" parent="." unique_id=432916366]
+amount = 10
+lifetime = 0.8
+process_material = SubResource("ParticleProcessMaterial_b5wmn")
